@@ -1,0 +1,14 @@
+/* Shared navigation for the connected local prototype. */
+body > .app-header { display:flex;align-items:center;gap:28px;padding:16px 32px;background:#17283d;color:#fff;border:0; }
+.app-header .app-brand { display:flex;flex-direction:column;gap:2px;flex-shrink:0;color:#fff;font-weight:800;font-size:18px;letter-spacing:.04em;text-decoration:none;line-height:1.2; }
+.app-header .app-brand-description { color:#c1cddb;font-size:11px;font-weight:400;letter-spacing:0;line-height:1.4; }
+.app-header .app-nav { display:flex;align-items:center;flex-wrap:wrap;gap:6px;min-width:0;max-width:100%; }
+.app-header .app-nav a,.app-header .app-nav button { display:inline-flex;align-items:center;min-height:40px;padding:8px 16px;border:0;border-radius:5px;background:transparent;color:#dbe5f2;font:inherit;font-size:14px;text-decoration:none;cursor:pointer; }
+.app-header .app-nav [aria-current] { background:#30445e;color:#fff;font-weight:700; }
+.app-header .app-nav a:hover,.app-header .app-nav button:hover { background:#30445e;color:#fff; }
+.app-header small { margin-left:auto;color:#c1cddb;font-size:12px; }
+.app-header a:focus-visible,.app-header button:focus-visible { outline:3px solid #b5ceff;outline-offset:3px; }
+.demo-error { padding:14px 18px;border:1px solid #b56d13;border-radius:6px;background:#fff5df;color:#754400;font-size:14px;line-height:1.6; }
+a.btn { display:inline-flex;align-items:center;justify-content:center;text-decoration:none; }
+.demo-context { color:#64738a;font-size:12px;line-height:1.6; }
+@media(max-width:700px){body>.app-header { padding:12px 16px;gap:14px;flex-wrap:wrap; }.app-header small { width:100%;margin:0; }.app-header .app-nav a,.app-header .app-nav button { padding-inline:12px; }}

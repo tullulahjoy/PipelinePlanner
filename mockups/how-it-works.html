@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How it works · LTPP</title>
+  <link rel="stylesheet" href="demo-navigation.css">
+  <style>
+    :root { font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif; color:#17283d; background:#f3f5f8; font-synthesis:none; }
+    * { box-sizing:border-box; }
+    body { margin:0; }
+    a { color:#315ed4; outline-offset:3px; }
+    :focus-visible { outline:3px solid #315ed4; outline-offset:3px; }
+    main { max-width:1120px; padding:32px; margin:auto; }
+    h1 { font-size:32px; letter-spacing:-.025em; margin:0 0 12px; }
+    .guide-intro { max-width:76ch; margin:0; color:#526780; font-size:15px; line-height:1.7; }
+    .guide-layout { display:grid; grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr); align-items:start; gap:36px; margin-top:28px; }
+    .workflow { list-style:none; counter-reset:guide-step; margin:0; padding:0; }
+    .workflow>li { position:relative; padding:0 0 23px 46px; margin:0 0 21px; border-bottom:1px solid #dfe5ee; counter-increment:guide-step; }
+    .workflow>li:last-child { border:0; padding-bottom:0; margin-bottom:0; }
+    .workflow>li::before { content:counter(guide-step,decimal-leading-zero); position:absolute; top:0; left:0; display:flex; align-items:center; justify-content:center; width:32px; height:32px; border:1px solid #d6dfed; border-radius:6px; background:#eaf0fa; color:#36537b; font-size:11px; font-weight:750; }
+    .workflow h2 { margin:0 0 8px; padding-top:4px; font-size:17px; line-height:1.4; letter-spacing:-.01em; }
+    .workflow>li.user-journey { margin-inline:-16px; padding:18px 16px 18px 62px; border-radius:6px; background:#e8effb; }
+    .workflow>li.user-journey::before { top:18px; left:16px; }
+    .workflow p { margin:0 0 10px; font-size:14px; line-height:1.75; }
+    .workflow p:last-child { margin-bottom:0; }
+    strong { font-weight:650; }
+    .date-notes { padding:22px; border:1px solid #d7e1ef; border-radius:9px; background:#fff; min-width:0; }
+    .date-notes h2 { margin:0 0 18px; font-size:16px; }
+    .date-notes h3 { margin:0 0 7px; font-size:13px; }
+    .date-notes section+section { border-top:1px solid #e0e6ee; padding-top:17px; margin-top:17px; }
+    .date-notes p { margin:0; font-size:13px; line-height:1.75; color:#526780; }
+    .date-notes p+p { margin-top:10px; }
+    .guide-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:28px; padding-top:20px; border-top:1px solid #dce4ef; }
+    .btn { display:inline-flex; justify-content:center; align-items:center; min-height:40px; padding:9px 16px; border:1px solid #bcc9db; border-radius:6px; background:#fff; color:#243b57; font-size:13px; font-weight:650; text-decoration:none; }
+    .btn.primary { border-color:#315ed4; background:#315ed4; color:#fff; }
+    .btn:hover { background:#edf2f8; }.btn.primary:hover { background:#244caa; }
+    @media(max-width:900px) { .guide-layout { grid-template-columns:minmax(0,1fr); gap:26px; }.date-notes { max-width:none; } }
+    @media(max-width:600px) { main { padding:24px 16px; }h1 { font-size:28px; }.guide-intro { font-size:14px; }.guide-layout { margin-top:24px; }.workflow>li { padding-left:42px; }.workflow>li.user-journey { padding-left:58px; }.workflow h2 { font-size:16px; }.date-notes { padding:18px; } }
+  </style>
+</head>
+<body>
+  <header class="app-header"><a class="app-brand" href="pipeline.html"><span>LTPP</span> <span class="app-brand-description">Long-term pipeline plan</span></a><nav class="app-nav" aria-label="Main navigation"><a href="pipeline.html">Pipeline</a><a href="templates-and-phase-library.html">Library</a><a href="versions-and-baselines.html">Saved Pipelines</a><a href="how-it-works.html" aria-current="page">How it works</a></nav><small>Local prototype · Fictional data</small></header>
+  <main>
+    <h1>How it works</h1>
+    <p class="guide-intro">Follow the live procurement plan, explore alternatives, compare saved pipelines and choose a new baseline when you are ready.</p>
+    <div class="guide-layout">
+      <ol class="workflow" role="list">
+        <li>
+          <h2>Build a procurement’s plan</h2>
+          <p>Each procurement has a <strong>schedule</strong>, meaning its activities and planned dates. Activities are organised into <strong>phases</strong>, such as writing bids or assessing them. Choose the phases you need and how many weeks each should take.</p>
+          <p>Save reusable phases in <a href="templates-and-phase-library.html">Library</a>. You can also save combinations of phases as <strong>templates</strong> to help build future procurements.</p>
+        </li>
+        <li>
+          <h2>Plan around a fixed date</h2>
+          <p>Choose a date for an important event, such as when a new service must begin. This is the <strong>anchor date</strong>. The planner uses it to calculate when the surrounding activities need to happen.</p>
+        </li>
+        <li>
+          <h2>Identify problematic overlaps</h2>
+          <p>An overlap occurs when activities happen at the same time. Some overlaps are acceptable; others may cause problems, for example because they need the same people.</p>
+          <p><strong>Overlap rules</strong> specify which combinations of phases in different procurements should be flagged. A <strong>Warning</strong> identifies an undesirable but manageable overlap. A <strong>Critical clash</strong> identifies an overlap you have defined as unacceptable.</p>
+        </li>
+        <li class="user-journey">
+          <h2>The User Journey</h2>
+          <p>The current <strong>baseline</strong> is the 'live' pipeline used for day-to-day planning. To explore changes, choose <strong>Edit this pipeline</strong> and save your work under a new name. You can keep several alternatives, edit them as often as needed and compare their schedules and overlaps. When ready, confirm your chosen pipeline as the <strong>new baseline</strong>. It becomes the live plan, and the process can begin again.</p>
+        </li>
+      </ol>
+      <aside class="date-notes" aria-labelledby="dates-heading">
+        <h2 id="dates-heading">How dates are planned</h2>
+        <section aria-labelledby="weekly-heading">
+          <h3 id="weekly-heading">Weeks commence on Mondays</h3>
+          <p>Durations use whole weeks. The timeline uses Mondays as planning points. If an anchor date falls on another day, it is plotted on Monday of that week, while the actual date remains recorded.</p>
+        </section>
+        <section aria-labelledby="christmas-heading">
+          <h3 id="christmas-heading">Christmas pause</h3>
+          <p>The planner assumes no activity during the two weeks containing Christmas Day and New Year’s Day. These weeks run from Monday to Sunday and do not count towards phase durations.</p>
+          <p>Six weeks of activity spanning this break therefore occupies eight weeks on the timeline.</p>
+        </section>
+      </aside>
+    </div>
+    <div class="guide-actions"><a class="btn primary" href="pipeline.html?view=live">View live pipeline</a><a class="btn" href="versions-and-baselines.html">Open Saved Pipelines</a><a class="btn" href="templates-and-phase-library.html">Open Library</a></div>
+  </main>
+</body>
+</html>

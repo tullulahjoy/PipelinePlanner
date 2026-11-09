@@ -1,0 +1,1261 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Add procurement · LTPP design study</title>
+  <style>
+    :root { font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif; color: #17283d; background: #f3f5f8; font-synthesis: none; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    button, input, select, textarea { font: inherit; }
+    button, a, input, select, textarea { outline-offset: 3px; }
+    :focus-visible { outline: 3px solid #315ed4; }
+    button { cursor: pointer; }
+    button:disabled { cursor: default; opacity: .48; }
+    header { padding: 16px 32px; background: #14283f; color: #fff; display: flex; align-items: center; gap: 15px; }
+    header a { color: #fff; text-decoration: none; font-weight: 650; }
+    .logo { border: 1px solid #728398; padding: 6px 8px; border-radius: 5px; font-size: 12px; letter-spacing: .08em; }
+    header small { margin-left: auto; color: #d0dae5; }
+    main { max-width: 1360px; margin: auto; padding: 30px 32px 0; }
+    .breadcrumb { font-size: 13px; color: #64738a; margin-bottom: 14px; }
+    .breadcrumb a { color: #315ed4; }
+    .heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
+    h1 { font-size: clamp(28px, 4vw, 36px); margin: 0 0 10px; letter-spacing: -.035em; }
+    p { line-height: 1.65; }
+    .intro { margin: 0; color: #596b80; max-width: 800px; font-size: 14px; }
+    .badge { border: 1px solid #cbd7ea; background: #eaf0fa; color: #31507b; font-size: 12px; padding: 7px 10px; border-radius: 20px; white-space: nowrap; }
+    .notice { padding: 12px 16px; font-size: 13px; line-height: 1.6; background: #eaf0fa; border-left: 3px solid #315ed4; margin: 20px 0; }
+    .card { background: white; border: 1px solid #dce2ea; border-radius: 10px; margin-bottom: 22px; overflow: hidden; }
+    .card-heading { display: flex; gap: 12px; padding: 21px 24px 16px; align-items: flex-start; }
+    .number { font-size: 12px; font-weight: 750; padding: 6px 9px; background: #edf1f7; border-radius: 5px; }
+    h2 { font-size: 18px; margin: 0 0 5px; letter-spacing: -.015em; }
+    .card-heading p { margin: 0; color: #607086; font-size: 13px; }
+    .body { padding: 0 24px 24px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+    label.field { display: flex; flex-direction: column; gap: 7px; font-size: 13px; font-weight: 650; }
+    input, select, textarea { border: 1px solid #b9c5d4; border-radius: 5px; padding: 9px 10px; color: #20354e; background: #fff; min-width: 0; }
+    input, select { min-height: 40px; }
+    .help { color: #64748b; font-size: 12px; font-weight: 400; line-height: 1.55; }
+    fieldset { border: 0; padding: 0; margin: 22px 0 0; }
+    legend { font-size: 13px; font-weight: 650; margin-bottom: 10px; padding: 0; }
+    .toolbar { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; padding: 0 24px 18px; }
+    .toolbar label { min-width: 230px; flex: 1; max-width: 430px; }
+    .btn { padding: 9px 14px; min-height: 40px; border: 1px solid #b9c5d4; border-radius: 5px; color: #243b57; background: #fff; font-size: 13px; font-weight: 650; }
+    .btn:hover:not(:disabled) { background: #edf2f8; }
+    .btn.primary { color: white; border-color: #2454c5; background: #2454c5; }
+    .btn.primary:hover:not(:disabled) { background: #193f9c; }
+    .table-scroll { overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; font-size: 13px; }
+    th { text-align: left; padding: 11px 12px; background: #f7f9fc; color: #52647b; font-size: 11px; font-weight: 700; border-block: 1px solid #dfe5ee; white-space: nowrap; }
+    td { padding: 8px 12px; border-bottom: 1px solid #e8edf3; vertical-align: middle; }
+    td:first-child, th:first-child { padding-left: 24px; width: 42px; color: #718096; }
+    .phase-table { min-width: 850px; }
+    .phase-table td input, .phase-table td select { width: 100%; padding: 7px 8px; font-size: 12px; min-height: 35px; }
+    .phase-table .name-col { min-width: 250px; width: 31%; }
+    .phase-table .duration-col { width: 100px; }
+    .phase-table .relation-col { min-width: 165px; }
+    .relation-control { display: flex; align-items: center; gap: 6px; }
+    .relation-control input { max-width: 60px; }
+    .relation-control select { min-width: 100px; }
+    .remove { border: 0; background: none; color: #78505b; padding: 7px; font-size: 19px; }
+    .table-footer { padding: 13px 24px; display: flex; align-items: center; gap: 15px; }
+    .table-footer p { margin: 0; font-size: 12px; color: #63748b; }
+    [hidden] { display: none !important; }
+    summary { color: #2454c5; font-size: 13px; font-weight: 650; cursor: pointer; }
+    textarea { width: 100%; min-height: 110px; font-family: ui-monospace, monospace; font-size: 12px; margin-bottom: 10px; }
+    .inline-status { font-size: 13px; color: #4e6078; margin: 10px 0 0; }
+    .overlap-rules { border-top: 1px solid #dfe5ee; padding-top: 22px; }
+    .overlap-rules h3 { margin: 0 0 8px; font-size: 16px; }
+    .overlap-rules .explanation { font-size: 13px; color: #566a82; margin: 0 0 16px; line-height: 1.7; }
+    .rules-note { margin: 0 0 18px; padding: 12px 14px; background: #f3f6fb; border: 1px solid #dfe6ef; border-radius: 6px; font-size: 12px; line-height: 1.65; color: #52647b; }
+    .rules-note .btn { margin-top: 10px; }
+    .rules-table { min-width: 1000px; }
+    .rules-table td { vertical-align: top; padding-top: 12px; padding-bottom: 12px; }
+    .rules-table td:first-child { min-width: 180px; padding-left: 12px; color: #20354e; }
+    .rules-table th:first-child { padding-left: 12px; }
+    .rules-table select, .rules-table input { width: 100%; font-size: 12px; min-height: 35px; padding: 7px; }
+    .rules-table .type-cell { min-width: 175px; }
+    .rules-table .tags-cell { min-width: 165px; }
+    .rules-table .summary-cell { min-width: 260px; }
+    .rule-line { display: block; line-height: 1.6; margin-bottom: 7px; font-size: 12px; }
+    .rule-source { display: block; font-size: 10px; color: #65788f; }
+    .severity { font-weight: 700; color: #88600d; }
+    .severity.critical { color: #a53146; }
+    .rule-none { color: #66788d; font-size: 12px; line-height: 1.6; }
+    .new-type { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; margin-top: 15px; }
+    .new-type .field { flex: 1; max-width: 330px; }
+    body.modal-open { overflow: hidden; }
+    .rule-editor { width: min(800px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); margin: auto; padding: 0; border: 1px solid #cbd7e8; border-radius: 10px; background: #fff; color: #17283d; box-shadow: 0 20px 70px #14283f40; }
+    .rule-editor[open] { display: flex; flex-direction: column; }
+    .rule-editor::backdrop { background: #14283f80; }
+    .modal-header { padding: 22px; display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; flex-shrink: 0; }
+    .rule-editor h4 { margin: 0; font-size: 18px; }
+    .modal-close { border: 0; background: #edf1f7; color: #40546b; border-radius: 5px; font-size: 22px; line-height: 1; padding: 6px 9px; }
+    .modal-content { padding: 0 22px 22px; overflow-y: auto; min-height: 0; }
+    .modal-phase { border: 1px solid #dfe6ef; border-radius: 6px; background: #f6f8fc; padding: 12px 14px; margin-bottom: 16px; font-size: 13px; line-height: 1.7; }
+    .modal-phase strong, .modal-phase span { display: block; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 22px; background: #f8fafc; border-top: 1px solid #dfe6ef; flex-shrink: 0; }
+    .rule-editor .editor-help { margin: 0 0 15px; font-size: 12px; color: #5b6d83; line-height: 1.65; }
+    .rule-form { display: grid; grid-template-columns: 1.1fr 1.1fr 1fr; gap: 14px; margin-top: 16px; }
+    .rule-form .field { font-size: 12px; }
+    .rule-form select, .rule-form input { width: 100%; font-size: 12px; }
+    .rule-editor ul { padding: 0; list-style: none; margin: 12px 0; }
+    .rule-editor li { display: flex; gap: 12px; align-items: center; justify-content: space-between; border-bottom: 1px solid #e0e6ee; padding: 10px 0; font-size: 12px; line-height: 1.65; }
+    .rule-editor li .btn { flex-shrink: 0; }
+    .rules-summary { font-size: 12px; color: #53677f; line-height: 1.7; padding-left: 20px; margin-bottom: 0; }
+    .anchor-summary { background: #f7f9fc; border: 1px solid #dfe5ee; padding: 12px 14px; border-radius: 6px; margin-top: 18px; font-size: 13px; line-height: 1.6; }
+    .review-empty { margin: 0 24px 24px; padding: 24px; background: #f8fafc; border: 1px dashed #becbdb; border-radius: 7px; color: #5d6e84; font-size: 14px; }
+    .review-empty p { margin: 0; }
+    .review-toolbar { display: flex; justify-content: space-between; gap: 15px; flex-wrap: wrap; align-items: end; margin-bottom: 18px; }
+    .review-toolbar .controls { display: flex; gap: 10px; }
+    .review-toolbar label { font-size: 12px; }
+    .mini-stat { font-size: 13px; line-height: 1.6; }
+    .mini-stat strong { font-size: 15px; }
+    .timeline-scroll { overflow-x: auto; border: 1px solid #dce2ea; border-radius: 6px; }
+    .timeline { min-width: 850px; }
+    .ruler { position: relative; height: 38px; background: #f7f9fc; border-bottom: 1px solid #e0e6ee; }
+    .tick { position: absolute; top: 11px; font-size: 10px; color: #53657b; white-space: nowrap; }
+    .timeline-row { display: grid; grid-template-columns: 190px 1fr; }
+    .timeline-name { padding: 24px 16px; font-size: 12px; border-right: 1px solid #dce2ea; background: #fafbfd; overflow-wrap: anywhere; }
+    .track { position: relative; min-height: 76px; background: repeating-linear-gradient(to right, transparent 0 calc(10% - 1px), #e7ecf3 calc(10% - 1px) 10%); }
+    .segment { position: absolute; top: 23px; height: 30px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 7px 4px; color: #fff; font-size: 10px; border-radius: 3px; text-align: center; }
+    .shutdown { position: absolute; top: 0; bottom: 0; background: repeating-linear-gradient(135deg, #fff0cacc 0 4px, #e2ca8f99 4px 5px); border-inline: 1px dashed #ad8b3c; pointer-events: none; }
+    .anchor-line { position: absolute; top: 8px; bottom: 8px; border-left: 2px solid #17283d; pointer-events: none; }
+    .anchor-line::before { content: '◆'; position: absolute; left: -6px; top: -9px; font-size: 12px; }
+    .legend { display: flex; gap: 10px 18px; flex-wrap: wrap; margin-top: 12px; font-size: 11px; color: #53667d; }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .legend i { width: 11px; height: 11px; border-radius: 2px; }
+    .checks { margin: 18px 0; display: grid; gap: 10px; }
+    .check { border-left: 3px solid #17766e; background: #edf7f4; padding: 12px 14px; font-size: 13px; line-height: 1.6; }
+    .check.warning { border-color: #b37810; background: #fff7e4; }
+    .check.error { border-color: #b33b46; background: #fff0f1; }
+    .check strong { display: block; margin-bottom: 3px; }
+    .check select { margin-top: 8px; width: min(100%, 450px); display: block; }
+    .check p { font-size: 12px; margin: 8px 0 0; }
+    .review-table { min-width: 650px; }
+    .review-table td { font-size: 12px; }
+    .actions { position: sticky; bottom: 0; z-index: 5; display: flex; justify-content: space-between; align-items: center; gap: 15px; padding: 16px 24px; background: #fffffff5; border: 1px solid #d5deea; border-radius: 9px 9px 0 0; box-shadow: 0 -5px 20px #14283f08; margin-top: 26px; }
+    .actions p { font-size: 12px; color: #5d6e84; margin: 0; }
+    .actions div { display: flex; gap: 10px; }
+    #feedback { font-size: 13px; line-height: 1.6; margin: 16px 0; }
+    @media (max-width: 750px) { header { padding: 14px 16px; } header small { font-size: 10px; } main { padding: 24px 16px 0; } .grid, .rule-form { grid-template-columns: 1fr; } .heading .badge { display: none; } .card-heading { padding: 18px 16px 14px; } .body { padding: 0 16px 18px; } .toolbar { padding-inline: 16px; } .actions { padding: 12px; flex-wrap: wrap; } .review-toolbar .controls { flex-wrap: wrap; } }
+  
+    /* Shared phase editor, aligned with the accepted Library study. */
+    #phase-table-scroll { overflow-x:auto; }
+    #phase-table-scroll table { table-layout:fixed; min-width:1250px; }
+    #phase-table-scroll th:nth-child(1) { width:48px; }
+    #phase-table-scroll th:nth-child(2) { width:350px; }
+    #phase-table-scroll td { vertical-align:top; }
+    #phase-table-scroll input,#phase-table-scroll select { width:100%; }
+    #phase-table-scroll .duration-col { width:100px; }
+    #phase-table-scroll .relation-col { width:225px; }
+    #phase-table-scroll .date-col { width:145px; }
+    #phase-table-scroll .row-actions { width:100px; white-space:nowrap; }
+    .source-note { display:block; color:#64748b; font-size:12px; line-height:1.5; margin:7px 0; overflow-wrap:anywhere; white-space:normal; }
+    .phase-source { margin-top:8px; font-size:12px; }
+    .rule-summary { margin:8px 0; padding:9px 11px; background:#f2f4f7; color:#46566c; border-radius:5px; font-size:12px; line-height:1.5; }
+    .rule-summary p { margin:0 0 5px; }
+    .rule-summary p:last-child { margin:0; }
+    .phase-rule-summary .rule-scope-caption { margin-bottom:6px; font-size:10px; line-height:1.5; }
+    .phase-rule-summary .rule-trigger-group+.rule-trigger-group { margin-top:8px; }
+    .phase-rule-summary .rule-trigger-label { display:inline-block; padding:1px 6px; border-radius:4px; background:#fff6df; color:#7d5106; font-size:10px; font-weight:700; line-height:1.5; }
+    .phase-rule-summary .rule-trigger-label.critical { background:#fff0f2; color:#a52f40; }
+    #phase-table-scroll .phase-rule-summary p.rule-trigger-names { margin:4px 0 0; color:#46566c; line-height:1.6; white-space:normal; overflow-wrap:anywhere; }
+    .configure-rules { font-size:12px; padding:6px 9px; min-height:32px; }
+    .proc-add { padding:20px 24px; }
+    .proc-add h3 { margin:0 0 12px; font-size:15px; }
+    .proc-add .buttons { display:flex; flex-wrap:wrap; gap:10px; }
+    .relationship { display:grid; grid-template-columns:1fr 68px; gap:7px; }
+    .relationship-note { font-size:12px; line-height:1.5; margin:9px 0 0; }
+    .relationship-note button { margin-top:8px; }
+    .needs-review { background:#fff7e5; box-shadow:inset 3px 0 #b87912; }
+    .relationship-error { color:#a72b25; }
+    #relationship-summary { margin:0 24px 15px; padding:12px; border:1px solid #e5c57f; background:#fff7e5; font-size:13px; line-height:1.6; }
+    #relationship-summary[hidden] { display:none; }
+    .drag-handle { touch-action:none; width:36px; height:40px; background:#edf2f8; border:1px solid #b9c5d4; border-radius:5px; cursor:grab; font-size:21px; color:#46566c; }
+    .dragging { opacity:.5; }
+    .drop-before { box-shadow:inset 0 3px #315ed4; }
+    .drop-after { box-shadow:inset 0 -3px #315ed4; }
+    #reorder-ghost { position:fixed; z-index:100; pointer-events:none; padding:10px 14px; border-radius:6px; background:#14283f; color:white; box-shadow:0 5px 20px #14283f44; max-width:350px; font-size:13px; }
+    #reorder-status { padding:0 24px; font-size:12px; color:#52647b; }
+    .proc-dialog { border:1px solid #ccd6e3; border-radius:12px; padding:0; width:min(760px,calc(100% - 32px)); max-height:90vh; color:#17283d; }
+    .proc-dialog::backdrop { background:#14283f88; }
+    .proc-dialog form { display:flex; flex-direction:column; max-height:88vh; }
+    .proc-dialog header { padding:18px 24px; background:#f7f9fc; color:#17283d; justify-content:space-between; border-bottom:1px solid #dfe5ee; }
+    .proc-dialog header h2 { margin:0; font-size:20px; }
+    .proc-dialog .modal-body { padding:20px 24px; overflow-y:auto; }
+    .proc-dialog footer { padding:16px 24px; border-top:1px solid #dfe5ee; display:flex; justify-content:flex-end; gap:10px; }
+    .proc-dialog .field { margin-bottom:16px; }
+    .proc-dialog .paired { display:grid; grid-template-columns:180px 180px; align-items:start; gap:20px; }
+    .proc-dialog .paired input { height:40px; width:180px; }
+    .proc-dialog .paired label { min-height:80px; }
+    .proc-dialog h3 { margin:22px 0 10px; font-size:16px; }
+    .proc-dialog p { font-size:13px; line-height:1.6; }
+    .proc-rule-row { padding:14px; border:1px solid #d8e0ea; border-radius:7px; background:#f8fafc; margin:12px 0; }
+    .proc-rule-row .rule-pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    #proc-rule-empty { padding:15px; background:#edf2f8; border:1px solid #cad6e5; font-weight:650; }
+    #proc-modal-status { color:#a72b25; }
+    .segment:focus-visible { outline:3px solid #14283f; outline-offset:3px; z-index:8; }
+    @media(max-width:520px) { .proc-dialog .paired,.proc-dialog .proc-rule-row .rule-pair { grid-template-columns:1fr; } }
+
+
+    /* A compact workspace with secondary settings in the phase dialog. */
+    main { max-width:1280px; padding-top:24px; }
+    .heading h1 { font-size:30px; }
+    .heading .intro { max-width:750px; }
+    .mockup-note { margin:12px 0 20px; color:#64748b; }
+    .mockup-note summary { font-size:12px; color:#64748b; font-weight:500; }
+    .mockup-note p { font-size:12px; margin:8px 0 0; max-width:900px; }
+    .card { margin-bottom:16px; }
+    .card-heading { padding:18px 22px 12px; }
+    .body { padding:0 22px 20px; }
+    .card-heading h2 { font-size:17px; }
+    .schedule-toolbar { display:flex; justify-content:space-between; align-items:end; flex-wrap:wrap; gap:14px; padding:0 22px 18px; }
+    .template-tools { display:flex; align-items:end; gap:8px; flex:1 1 340px; max-width:460px; }
+    .template-tools label { flex:1; min-width:0; }
+    .add-tools { display:flex; gap:8px; flex-wrap:wrap; }
+    .schedule-empty { margin:0 22px 20px; padding:20px; border:1px dashed #c5d0df; border-radius:7px; background:#f9fafc; text-align:center; }
+    .schedule-empty strong { font-size:14px; }
+    .schedule-empty p { margin:6px 0 0; font-size:13px; color:#64748b; }
+    #phase-table-scroll table { min-width:860px; }
+    #phase-table-scroll th:nth-child(1) { width:42px; }
+    #phase-table-scroll th:nth-child(2) { width:auto; }
+    #phase-table-scroll .name-col { width:auto; min-width:0; }
+    #phase-table-scroll .duration-col { width:98px; }
+    #phase-table-scroll .relation-col { width:245px; }
+    #phase-table-scroll .row-actions { width:152px; }
+    #phase-table-scroll .date-col { width:153px; }
+    #phase-table-scroll td { padding-top:12px; padding-bottom:12px; }
+    .phase-label { display:block; padding-top:6px; line-height:1.5; font-size:13px; overflow-wrap:anywhere; }
+    .source-note { margin:4px 0 0; font-size:11px; line-height:1.5; }
+    .rule-summary { padding:7px 9px; margin:7px 0 0; font-size:11px; }
+    .relationship:has(input[hidden]) { grid-template-columns:1fr; }
+    #phase-table-scroll .row-actions > div { display:flex; align-items:center; gap:5px; }
+    .row-edit { min-height:35px; padding:6px 9px; font-size:12px; }
+    .row-remove { border:0; background:transparent; color:#796071; padding:4px; width:25px; height:35px; font-size:20px; }
+    .drag-handle { width:30px; height:35px; font-size:20px; flex-shrink:0; }
+    .schedule-footnote { padding:10px 22px; font-size:11px; line-height:1.6; color:#64748b; }
+    #reorder-status:empty { display:none; }
+    #reorder-status { padding:0 22px; margin:0 0 12px; }
+    .anchor-grid { display:grid; grid-template-columns:1fr 1.4fr 1fr; gap:14px; align-items:start; }
+    .anchor-grid input,.anchor-grid select { width:100%; }
+    .anchor-grid > .field { display:flex; flex-direction:column; gap:7px; font-size:13px; font-weight:650; }
+    .anchor-summary { margin-top:12px; padding:9px 12px; font-size:12px; }
+    .schedule-review { border-top:1px solid #dfe5ee; scroll-margin-top:20px; }
+    .review-heading { padding:18px 22px 14px; }
+    .review-heading h3 { margin:0 0 4px; font-size:17px; }
+    .review-heading p { margin:0; font-size:13px; color:#64748b; }
+    .actions { margin-top:18px; padding:12px 18px; }
+    .actions p { font-size:11px; }
+    #feedback:empty { display:none; }
+    #row-settings-dialog { width:min(600px,calc(100% - 32px)); }
+    #row-settings-dialog .source-note { font-size:12px; margin:0 0 16px; }
+    #row-settings-dialog .rule-summary { font-size:12px; padding:10px 12px; margin:0 0 12px; }
+    #row-settings-dialog .help { margin-bottom:0; }
+    #row-settings-error { font-size:13px; color:#a72b25; }
+    @media(max-width:1050px) { .anchor-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:600px) { .card-heading { padding:16px 16px 12px; } .body { padding:0 16px 16px; } .anchor-grid { grid-template-columns:1fr; } .schedule-toolbar { padding-inline:16px; } .template-tools { max-width:none; } .add-tools { width:100%; } .add-tools .btn { flex:1; } .schedule-empty { margin-inline:16px; } .actions div { flex-wrap:wrap; } }
+
+
+    .anchor-point { pointer-events:auto; width:12px; padding:0; background:transparent; border:0; border-left:2px solid #17283d; color:#17283d; cursor:pointer; }
+    .anchor-point:focus-visible { outline:3px solid #315ed4; outline-offset:3px; z-index:8; }
+
+
+    .library-link-prompt { display:block; padding:0; border:0; background:transparent; color:#2454c5; text-align:left; text-decoration:underline; cursor:pointer; line-height:1.5; }
+    .library-link-actions { display:flex; flex-wrap:wrap; gap:8px; }
+    #row-settings-link-status:empty { display:none; }
+
+    /* Shared Library chooser uses native search, radio and dialog controls. */
+    .proc-dialog header p { margin:5px 0 0; font-size:12px; color:#60738a; line-height:1.6; }
+    .proc-library-list { border:0; padding:0; margin:12px 0 0; min-width:0; }
+    .proc-library-list legend { padding:0; font-size:13px; font-weight:650; }
+    #proc-library-count { margin:5px 0 9px; font-size:11px; }
+    .proc-library-results { max-height:210px; overflow-y:auto; overscroll-behavior:contain; border:1px solid #d6e0ed; border-radius:6px; }
+    .proc-library-results:empty { display:none; }
+    .proc-library-choice { display:flex; align-items:center; gap:10px; padding:11px 13px; border-bottom:1px solid #e2e8f0; cursor:pointer; }
+    .proc-library-choice:last-child { border-bottom:0; }
+    .proc-library-choice:has(input:checked) { background:#edf3ff; box-shadow:inset 3px 0 #315ed4; }
+    .proc-library-choice:focus-within { outline:2px solid #315ed4; outline-offset:-2px; }
+    .proc-library-choice input { width:16px; height:16px; min-height:0; margin:0; accent-color:#315ed4; flex-shrink:0; }
+    .proc-library-choice .swatch { width:11px; height:11px; border-radius:3px; flex-shrink:0; }
+    .proc-library-choice strong { font-size:13px; font-weight:600; overflow-wrap:anywhere; }
+    .proc-library-choice small { font-size:12px; white-space:nowrap; color:#63758e; margin-left:auto; padding-left:10px; }
+    .proc-library-empty { padding:16px; background:#f3f6fa; border:1px dashed #c6d2e1; border-radius:6px; color:#526780; }
+    .proc-library-create { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; padding:12px 0; }
+    .proc-library-create p { margin:0; color:#60738a; }
+    #proc-item-details { border-top:1px solid #dce5ef; padding-top:18px; margin-top:18px; }
+    .proc-item-fields { display:grid; grid-template-columns:minmax(0,1fr) 185px; gap:16px; align-items:end; }
+    .proc-item-fields:has(#proc-item-weeks-field[hidden]) { grid-template-columns:1fr; }
+    .proc-item-fields input { width:100%; }
+    .proc-item-rules { background:#f3f5f8; padding:12px 14px; border-radius:6px; margin-top:12px; }
+    .proc-item-rules h3 { margin:0 0 7px; font-size:13px; }
+    .proc-item-rules p { margin:5px 0 0; color:#5b6f87; font-size:12px; line-height:1.6; }
+    #proc-item-status { color:#a72b25; }
+    @media(max-width:550px) { .proc-item-fields { grid-template-columns:1fr; } .proc-library-create { align-items:flex-start; flex-direction:column; } }
+
+
+    .procurement-name-field { max-width:620px; }
+
+    .schedule-edit-scope { margin:0; padding:0 22px 14px; font-size:12px; line-height:1.6; color:#64748b; }
+    .column-help { display:block; margin-top:4px; white-space:normal; font-size:10px; font-weight:400; }
+    #phase-table-scroll .duration-col { width:148px; }
+    .duration-note { display:block; margin-top:5px; font-size:11px; line-height:1.5; color:#64748b; }
+    .duration-note.changed { color:#315b93; font-weight:550; }
+    .relationship { grid-template-columns:minmax(0,1fr) 94px; gap:6px; align-items:center; }
+    .relationship:has(.relationship-amount[hidden]) { grid-template-columns:1fr; }
+    .relationship-amount { display:flex; align-items:center; gap:4px; min-width:0; }
+    #phase-table-scroll .relationship-amount input { width:60px; min-width:60px; }
+    .relationship-amount span { font-size:11px; color:#526780; white-space:nowrap; }
+    .relationship-description { margin:6px 0 0; font-size:11px; line-height:1.5; color:#60738a; }
+    .relationship-description:empty { display:none; }
+    .relationship-description.first-item { margin:0; min-height:35px; display:flex; align-items:center; font-size:12px; }
+    .rule-scope-caption { display:block; margin:0 0 4px; font-size:10px; font-weight:650; color:#526780; }
+    @media(max-width:600px) { .schedule-edit-scope { padding-inline:16px; } }
+
+
+    .timeline-scroll { width:100%; max-width:100%; overscroll-behavior-x:contain; }
+    .timeline { min-width:0; }
+    .timeline-ruler-row,.timeline-row { display:flex; }
+    .timeline-name,.timeline-label-heading { position:sticky; left:0; z-index:10; width:var(--timeline-label-width,190px); flex:0 0 auto; }
+    .timeline-name { box-shadow:2px 0 4px #14283f08; }
+    .timeline-label-heading { background:#f7f9fc; border-right:1px solid #dce2ea; border-bottom:1px solid #e0e6ee; padding:11px 12px; font-size:11px; color:#53657b; z-index:11; }
+    .ruler,.track { flex:1 1 0; min-width:0; overflow:hidden; }
+    .timeline-scroll-help { margin:9px 0 0; }
+    .schedule-bottom-add { display:flex; flex-wrap:wrap; gap:10px; padding:14px 22px; border-top:1px solid #e5eaf2; }
+    @media(max-width:600px) { .schedule-bottom-add { padding-inline:16px; } }
+  </style>
+  <link rel="stylesheet" href="demo-navigation.css">
+  <link rel="stylesheet" href="timeline-tooltips.css">
+</head>
+<body>
+  <header class="app-header"><a class="app-brand" href="pipeline.html"><span>LTPP</span> <span class="app-brand-description">Long-term pipeline plan</span></a><nav class="app-nav" aria-label="Main navigation"><a href="pipeline.html" aria-current="true">Pipeline</a><a href="templates-and-phase-library.html">Library</a><a href="versions-and-baselines.html">Saved Pipelines</a><a href="how-it-works.html">How it works</a></nav><small>Local prototype · Fictional data</small></header>
+  <main>
+    <div class="breadcrumb"><a href="pipeline.html">Pipeline</a> / Add procurement</div>
+    <div class="heading"><div><h1>Add procurement</h1><p class="intro">Name your procurement, build its schedule and check the dates before adding it to the pipeline.</p></div><span class="badge">Design mockup</span></div>
+    <details class="mockup-note"><summary>About this mockup</summary><p>Fictional data is saved in this browser when you confirm. Phases, templates and shared overlap rules come from the connected Library. The add-to-pipeline clash guidance is still a placeholder.</p></details>
+
+    <section class="card" aria-labelledby="details-title">
+      <div class="card-heading"><span class="number">01</span><div><h2 id="details-title">Name your procurement</h2><p>Build this procurement’s schedule from phases and an anchor date.</p></div></div>
+      <div class="body"><label class="field procurement-name-field">Procurement name<input id="procurement-name" placeholder="Enter procurement name" required maxlength="150" /></label></div>
+    </section>
+
+    <section class="card" aria-labelledby="phases-title">
+      <div class="card-heading"><span class="number">02</span><div><h2 id="phases-title">Build the schedule</h2><p>Choose a template or add phases individually. Adjust durations and relationships, then set the anchor and preview to calculate dates.</p></div></div>
+      <div class="schedule-toolbar">
+        <div class="template-tools"><label class="field">Start from a template (optional)<select id="template"><option value="" selected>Choose a template</option><option value="reference">Service transfer · reference procurement</option><option value="short">Short procurement · award anchor</option></select></label><button class="btn" id="load-template" type="button" disabled>Use template</button></div>
+        <div class="add-tools" id="schedule-add-controls" role="group" aria-label="Add to procurement schedule"><button type="button" id="add-schedule-phase" class="btn primary" data-add-proc="library">+ Add phase</button><button type="button" class="btn" data-add-proc="milestone">+ Add milestone</button></div>
+      </div>
+      <div class="schedule-empty" id="phase-empty"><strong>Your schedule starts here</strong><p>Choose Add phase to browse the Library or create a phase, or use a template. Dates are calculated when you preview.</p></div>
+      <p class="schedule-edit-scope" id="schedule-edit-scope" hidden>Durations, order and timing between items are specific to this procurement. Library phases and templates are unchanged by those edits.</p>
+      <div id="relationship-summary" role="status" hidden></div>
+      <div class="table-scroll" id="phase-table-scroll" hidden><table class="phase-table"><thead><tr><th scope="col">#</th><th scope="col" class="name-col">Phase / milestone</th><th scope="col" class="duration-col">Whole weeks</th><th scope="col" class="relation-col">Within this procurement<span class="column-help">Timing relative to previous item</span></th><th scope="col" class="row-actions">Actions</th></tr></thead><tbody id="phase-rows"></tbody></table></div>
+      <div class="schedule-bottom-add" id="schedule-bottom-add" role="group" aria-label="Add another step to the procurement schedule" hidden><button type="button" class="btn primary" data-add-proc="library">+ Add phase</button><button type="button" class="btn" data-add-proc="milestone">+ Add milestone</button></div>
+      <div class="schedule-footnote" id="schedule-footnote" hidden>Overlap and gap amounts exclude Christmas pauses. Use the grip to reorder rows. Keyboard: Space, arrow keys, Space to drop.</div>
+      <p id="reorder-status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="card" aria-labelledby="anchor-title">
+      <div class="card-heading"><span class="number">03</span><div><h2 id="anchor-title">Anchor date and preview</h2><p>The anchor is a named milestone with a fixed date that the schedule is planned around, such as service responsibility transferring. Select a milestone from the schedule or add one at the relevant position.</p></div></div>
+      <div class="body"><div class="anchor-grid">
+        <label class="field">Actual anchor date<input id="anchor-date" type="date" required /></label>
+        <label class="field">Anchor milestone<select id="anchor-phase"></select></label>
+        <div class="field"><span>Need a different milestone?</span><button type="button" class="btn" id="add-anchor-milestone">+ Add anchor milestone</button></div>
+      </div><p class="help">The anchor is a milestone with no duration. It is plotted on Monday of the entered date’s week; the actual date stays recorded. A phase can start on that same Monday.</p><div class="anchor-summary" id="anchor-summary" hidden></div></div>
+      <div id="review-section" class="schedule-review" aria-labelledby="review-title" hidden>
+      <div class="review-heading"><h3 id="review-title">Review the schedule</h3><p>Check the timeline, exact dates and any questions below.</p></div>
+      <div id="review-empty" hidden></div>
+      <div class="body" id="review-result" hidden>
+        <div class="review-toolbar"><div class="mini-stat" id="schedule-summary"></div><div class="controls"><label class="field">Preview window <select id="view-length"><option value="all">Full procurement</option><option value="6">Six months</option><option value="12">One year</option></select></label><label class="field">Window starts <input type="date" id="view-start" /></label></div></div>
+        <div class="timeline-scroll" id="timeline-scroll" tabindex="0" role="region" aria-label="Procurement timeline" aria-describedby="timeline-scroll-help"><div class="timeline" id="timeline-canvas"><div class="timeline-ruler-row"><div class="timeline-label-heading">Procurement</div><div class="ruler" id="ruler"></div></div><div class="timeline-row"><div class="timeline-name" id="timeline-name"></div><div class="track" id="track"></div></div></div></div>
+        <p class="help timeline-scroll-help" id="timeline-scroll-help" hidden>Scroll horizontally to see earlier or later parts of the procurement. The selected timescale stays the same. You can also focus the timeline and use the left and right arrow keys.</p>
+        <div class="legend" id="legend"></div>
+        <div class="checks" id="checks" aria-live="polite"></div>
+        <div class="table-scroll"><table class="review-table"><thead><tr><th scope="col">#</th><th scope="col">Phase / milestone</th><th scope="col" id="review-start-heading">Planning start / milestone</th><th scope="col" id="review-finish-heading">Planning finish</th><th scope="col">Activity duration</th></tr></thead><tbody id="review-rows"></tbody></table></div>
+      </div>
+      </div>
+    </section>
+    <p id="feedback" role="status" aria-live="polite"></p>
+    <div class="actions"><p>Preview the schedule, then add it to your local demo pipeline.</p><div><a class="btn" href="pipeline.html">Cancel</a><button class="btn primary" id="preview" type="button">Preview schedule</button><button class="btn" id="confirm" type="button" disabled>Add Procurement to Pipeline</button></div></div>
+  </main>
+
+
+
+  <dialog id="add-confirm-dialog" class="proc-dialog" aria-labelledby="add-confirm-title" aria-describedby="add-confirm-description">
+    <form id="add-confirm-form">
+      <header><h2 id="add-confirm-title">Add Procurement to Pipeline?</h2><button type="button" class="btn" id="close-add-confirm" aria-label="Cancel adding procurement">×</button></header>
+      <div class="modal-body" id="add-confirm-description">
+        <p>If you confirm, this procurement will be plotted on the pipeline.</p>
+        <p class="source-note"><strong>Placeholder:</strong> Clash identification and any actions required — explanation to be added.</p>
+        <p class="help">This prototype saves the procurement to this browser’s demo pipeline.</p>
+      </div>
+      <footer><button type="button" class="btn" id="cancel-add-confirm">Cancel</button><button type="submit" class="btn primary">Confirm and add</button></footer>
+    </form>
+  </dialog>
+
+  <dialog id="template-replace-dialog" class="proc-dialog" aria-labelledby="template-replace-title" aria-describedby="template-replace-description">
+    <form id="template-replace-form">
+      <header><h2 id="template-replace-title">Replace this schedule?</h2><button type="button" class="btn" id="close-template-replace" aria-label="Cancel replacing schedule">×</button></header>
+      <div class="modal-body">
+        <p id="template-replace-description"></p>
+        <p>This replaces the current phases and milestones, including your duration, order and timing changes. The template’s anchor milestone will be selected.</p>
+        <p>Your procurement name and entered anchor date will be kept.</p>
+      </div>
+      <footer><button type="button" class="btn" id="cancel-template-replace">Keep current schedule</button><button type="submit" class="btn primary" id="confirm-template-replace">Replace schedule</button></footer>
+    </form>
+  </dialog>
+
+  <dialog id="row-settings-dialog" class="proc-dialog" aria-labelledby="row-settings-title">
+    <form id="row-settings-form">
+      <header><h2 id="row-settings-title">Edit phase</h2><button type="button" class="btn" data-close-row aria-label="Close phase settings">×</button></header>
+      <div class="modal-body">
+        <label class="field">Name in this procurement<input id="row-settings-name" required maxlength="150"></label>
+        <div id="row-settings-library">
+          <label class="field">Library phase (select a suitable match)<select id="row-settings-source"></select></label>
+          <p class="source-note" id="row-settings-duration"></p>
+          <h3>Overlaps to flag across the pipeline</h3>
+          <div class="rule-summary" id="row-settings-rules"></div>
+          <div class="library-link-actions"><button type="button" class="btn" id="row-settings-configure">Configure shared rules</button><button type="button" class="btn" id="row-settings-create">+ Create a Library phase</button></div>
+          <p id="row-settings-link-status" class="help" role="status"></p>
+          <p class="help">Select a Library phase and save to use its shared overlap rules. This procurement’s name and duration are retained. Create a Library phase if none fits. Library creation and shared-rule changes are saved separately.</p>
+        </div>
+        <p class="help" id="row-settings-milestone" hidden>Milestones mark a point in time and have no duration.</p>
+        <p id="row-settings-error" role="status"></p>
+      </div>
+      <footer><button type="button" class="btn" data-close-row>Cancel</button><button type="submit" class="btn primary">Save phase settings</button></footer>
+    </form>
+  </dialog>
+
+  <div id="reorder-ghost" hidden aria-hidden="true"></div>
+
+  <dialog id="proc-item-dialog" class="proc-dialog" aria-labelledby="proc-item-title" aria-describedby="proc-item-description">
+    <form id="proc-item-form">
+      <header><div><h2 id="proc-item-title">Add phase</h2><p id="proc-item-description">Browse or search the Library, then select a phase to review it.</p></div><button type="button" class="btn" data-close-proc="item" aria-label="Close">×</button></header>
+      <div class="modal-body">
+        <div id="proc-library-field">
+          <label class="field">Search phases in the Library<input id="proc-library-search" type="search" placeholder="Search by phase name" autocomplete="off"></label>
+          <fieldset class="proc-library-list"><legend>Phases in the Library</legend><p id="proc-library-count" class="help" role="status" aria-live="polite"></p><div id="proc-library-results" class="proc-library-results"></div><p id="proc-library-empty" class="proc-library-empty" hidden></p></fieldset>
+          <div class="proc-library-create"><p id="proc-library-create-help">If nothing here meets your need, create a new phase.</p><button type="button" id="proc-create-from-library" class="btn">+ Create a new phase</button></div>
+          <p class="help">You can change a phase’s duration for this procurement without creating a new Library phase.</p>
+        </div>
+        <input id="proc-library" type="hidden">
+        <div id="proc-item-details" hidden>
+          <div class="proc-item-fields"><label class="field">Name in this procurement<input id="proc-item-name" required maxlength="150"></label><label class="field" id="proc-item-weeks-field">Duration in whole weeks<input type="number" id="proc-item-weeks" min="1" max="1000" step="1" required></label></div>
+          <p id="proc-item-source" class="source-note"></p>
+          <div id="proc-item-rules" class="proc-item-rules"><h3>Overlaps to flag across the pipeline</h3><div id="proc-item-rule-summary"></div></div>
+        </div>
+        <label class="field" id="proc-item-position-field" hidden>Position in the schedule<select id="proc-item-position"></select></label>
+        <p id="proc-item-status" role="status"></p>
+        <p>Preview the schedule after adding a phase or milestone to calculate its dates and review its effect.</p>
+      </div>
+      <footer><button type="button" class="btn" data-close-proc="item">Cancel</button><button id="proc-add-item" type="submit" class="btn primary" disabled>Add phase to procurement</button></footer>
+    </form>
+  </dialog>
+  <dialog id="proc-phase-dialog" class="proc-dialog" aria-labelledby="proc-phase-title">
+    <form id="proc-phase-form">
+      <header><h2 id="proc-phase-title">Create phase</h2><button type="button" class="btn" data-close-proc="phase" aria-label="Close">×</button></header>
+      <div class="modal-body">
+        <label class="field">Phase name<input id="proc-phase-name" required maxlength="100"></label>
+        <div class="paired"><label class="field">Default duration in whole weeks<input id="proc-phase-weeks" type="number" min="1" max="1000" step="1" required></label><label class="field">Colour<input id="proc-phase-color" type="color" value="#315ed4"></label></div>
+        <p id="proc-phase-help"></p>
+        <h3>Overlaps to flag across the pipeline</h3>
+        <p>Identify if any phase(s) in other procurements could clash problematically with this one, including another occurrence of the same phase. Select a 'Warning' for undesirable but manageable overlap, or a 'Critical clash' for unacceptable overlap.</p>
+        <p>Where a rule affects two phases, the rule will appear automatically under both phases. Editing or removing it updates both instances and refreshes warnings and critical clashes across the pipeline.</p>
+        <p id="proc-rule-empty">No overlap rules defined.</p>
+        <div id="proc-rule-rows"></div>
+        <button id="proc-add-rule" class="btn primary" type="button">+ Add overlap rule</button>
+        <p id="proc-modal-status" role="status"></p>
+      </div>
+      <footer><button type="button" class="btn" data-close-proc="phase">Cancel</button><button id="proc-save-phase" type="submit" class="btn primary">Create phase and add to procurement</button></footer>
+    </form>
+  </dialog>
+
+  <script src="demo-data.js"></script>
+  <script src="timeline-tooltips.js"></script>
+  <script>
+    if(window.LTPPDemo.pipelineSource().readOnly)window.LTPPDemo.go('pipeline.html?view=resume&notice=baseline');
+    const dayMs = 86400000;
+    const palette = ['#476b8d','#536ea1','#6a62a2','#7c6c99','#5077a0','#536ea1','#315ed4','#bc4c16','#7658a7','#7658a7','#17766e','#34654c'];
+    const $ = id => document.getElementById(id);
+    const parseISO = value => /^\d{4}-\d{2}-\d{2}$/.test(value) ? Date.parse(value + 'T00:00:00Z') : NaN;
+    const iso = time => new Date(time).toISOString().slice(0,10);
+    const dateFormatter = new Intl.DateTimeFormat('en-GB', {day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
+    const format = time => dateFormatter.format(new Date(time));
+    let phases = [], preview = null;
+    const isAddStudy=true;
+
+    // All connected pages share the same browser-local Library.
+    const connectedLibrary=window.LTPPDemo.library();
+    const libraryPhases=connectedLibrary.types.map(({id,name,weeks,color})=>({id,name,weeks,color}));
+    let pipelineRules=connectedLibrary.sharedRules.map(rule=>({id:rule.id,a:rule.sourceId,b:rule.kind==='same'?rule.sourceId:rule.target,severity:rule.severity,reason:rule.reason||''}));
+    let nextRule=window.LTPPDemo.counter(pipelineRules,'rule-'),nextLibrary=window.LTPPDemo.counter(libraryPhases,'created-'),nextOccurrence=1000;
+    const libraryById=id=>libraryPhases.find(p=>p.id===id);
+    const activeItems=()=>phases;
+    const procDirty=()=>isAddStudy?invalidate():dirty();
+    function bindLibrary(item,id,fromTemplate=true){
+      const source=libraryById(id);
+      if(source)Object.assign(item,{libraryPhaseId:id,sourceName:source.name,libraryDefaultWeeks:source.weeks,initialWeeks:fromTemplate?item.weeks:source.weeks,fromTemplate,color:source.color});
+      return item;
+    }
+    function procNode(tag,text,className=''){const el=document.createElement(tag);if(text!==undefined)el.textContent=text;if(className)el.className=className;return el;}
+    function procButton(label,fn,className='btn'){const button=procNode('button',label,className);button.type='button';button.addEventListener('click',fn);return button;}
+    function sourceDescription(item){
+      if(item.kind==='milestone')return 'Milestone: no duration.';
+      if(!item.libraryPhaseId)return 'No Library phase selected. Choose a Library phase to use its shared overlap rules. This procurement’s duration is retained.';
+      const original=item.initialWeeks??item.libraryDefaultWeeks;
+      if(item.weeks!==original)return 'Default duration of '+original+" weeks for '"+item.sourceName+"' phase overridden by user for this procurement.";
+      if(item.fromTemplate&&original!==item.libraryDefaultWeeks)return 'Template duration is '+original+' weeks; Library default for '+item.sourceName+' is '+item.libraryDefaultWeeks+' weeks.';
+      return 'Default duration is '+item.libraryDefaultWeeks+" weeks, copied from '"+item.sourceName+"' phase in Library.";
+    }
+    const rulesForPhase=id=>pipelineRules.filter(rule=>rule.a===id||rule.b===id);
+    function ruleDescription(rule,id){
+      const other=libraryById(rule.a===id?rule.b:rule.a);
+      return (rule.severity==='critical'?'Critical clash':'Warning')+' trigger: overlap with '+(other?.name||'selected')+' phases in other procurements.';
+    }
+    function phaseRuleSummary(rules,id){
+      const summary=procNode('div',undefined,'rule-summary phase-rule-summary');
+      summary.append(procNode('strong','Overlaps to flag in other procurements','rule-scope-caption'));
+      [['warning','Warning triggers'],['critical','Critical clash triggers']].forEach(([severity,label])=>{
+        const names=[...new Set(rules.filter(rule=>rule.severity===severity).map(rule=>libraryById(rule.a===id?rule.b:rule.a)?.name||'Selected phase'))];
+        if(!names.length)return;
+        const group=procNode('div',undefined,'rule-trigger-group');
+        group.append(procNode('span',label,'rule-trigger-label'+(severity==='critical'?' critical':'')),procNode('p',names.join(' · '),'rule-trigger-names'));
+        summary.append(group);
+      });
+      return summary;
+    }
+    function refreshProcSelectors(){
+      if(isAddStudy){renderAnchor();return;}
+      ['anchor-phase','group-first','group-last'].forEach(id=>populateSelect(id,$(id).value));
+      updateAnchorSummary();
+    }
+    // A relationship is reviewed against a particular predecessor, rather than a row position.
+    let reviewedPredecessors=new Map();
+    function resetRelationshipReview(){reviewedPredecessors=new Map(activeItems().map((item,index)=>[item.id,index?activeItems()[index-1].id:null]));}
+    function relationError(item,index){
+      if(!item.offset)return '';
+      if(index===0)return 'There is no previous item. Choose First item.';
+      if(!Number.isInteger(item.offset)||Math.abs(item.offset)>104)return 'Enter 1–104 whole weeks for the overlap or gap.';
+      if(item.offset<0&&(item.kind==='milestone'||activeItems()[index-1].kind==='milestone'||-item.offset>Math.min(item.weeks,activeItems()[index-1].weeks)))return 'Overlap must fit within both adjacent phases. A milestone cannot overlap.';
+      return '';
+    }
+    function relationshipChecks(){
+      return activeItems().flatMap((item,index)=>{
+        const previous=index?activeItems()[index-1].id:null;
+        const error=relationError(item,index);
+        return error||item.offset&&reviewedPredecessors.get(item.id)!==previous?[{item,index,previous,error}]:[];
+      });
+    }
+    function relationshipGate(){
+      const check=relationshipChecks()[0];if(!check)return;
+      $('phase-rows').querySelector('tr[data-item-id="'+check.item.id+'"] .relation-col')?.scrollIntoView({block:'center',behavior:'smooth'});
+      throw new Error(check.error||check.item.name+': review its timing relative to the new previous item before previewing.');
+    }
+    function acknowledgeRelation(item){
+      const index=activeItems().indexOf(item);
+      if(!relationError(item,index))reviewedPredecessors.set(item.id,index?activeItems()[index-1].id:null);
+    }
+    function updateRelationshipFeedback(){
+      const checks=relationshipChecks(),summary=$('relationship-summary');
+      summary.hidden=!checks.length;summary.replaceChildren();
+      if(checks.length)summary.append(procNode('strong',checks.length+' relationship'+(checks.length===1?' needs':'s need')+' review. '),procButton('Review first check',()=>{$('phase-rows').querySelector('tr[data-item-id="'+checks[0].item.id+'"] .relation-col')?.scrollIntoView({block:'center',behavior:'smooth'});$('phase-rows').querySelector('tr[data-item-id="'+checks[0].item.id+'"] [data-key="relation"]')?.focus();}));
+      activeItems().forEach((item,index)=>{
+        const row=$('phase-rows').querySelector('tr[data-item-id="'+item.id+'"]'),cell=row?.querySelector('.relation-col');if(!cell)return;
+        cell.querySelector('.relationship-note')?.remove();const check=checks.find(c=>c.item.id===item.id);cell.classList.toggle('needs-review',!!check);if(!check)return;
+        const note=procNode('div',undefined,'relationship-note'+(check.error?' relationship-error':''));
+        const oldId=reviewedPredecessors.get(item.id),old=activeItems().find(p=>p.id===oldId);
+        note.append(procNode('p',check.error||'Previously after '+(old?.name||'the previous phase (now removed)')+'. Now after '+(activeItems()[index-1]?.name||'no phase')+'. '+Math.abs(item.offset)+' active weeks '+(item.offset<0?'overlap.':'pipeline adjustment gap.')));
+        if(!check.error)note.append(procButton('Keep this relationship',()=>{acknowledgeRelation(item);procDirty();updateRelationshipFeedback();}));
+        cell.append(note);
+      });
+    }
+
+
+
+    function durationBaseline(item){return item.initialWeeks??item.libraryDefaultWeeks;}
+    function durationDefaultLabel(item){
+      const value=durationBaseline(item);
+      return Number.isFinite(value)?(item.fromTemplate?'Template':'Library')+' default: '+value+' weeks':'Set for this procurement';
+    }
+    function durationSourceNote(item){
+      const value=durationBaseline(item);
+      return Number.isFinite(value)&&item.weeks!==value?'Changed for this procurement':durationDefaultLabel(item);
+    }
+    function updateDurationSourceNote(item){
+      const note=$('duration-note-'+item.id);if(!note)return;
+      note.textContent=durationSourceNote(item);note.title=durationDefaultLabel(item);
+      note.classList.toggle('changed',Number.isFinite(durationBaseline(item))&&item.weeks!==durationBaseline(item));
+    }
+    function relationshipDescription(item,index){
+      if(index===0&&!item.offset)return 'First item';
+      if(relationError(item,index))return '';
+      const previous=activeItems()[index-1];if(!previous)return '';
+      const verb=item.kind==='milestone'?'Occurs':'Starts',event=previous.name+(previous.kind==='milestone'?'':' finishes');
+      if(item.offset<0)return verb+' '+Math.abs(item.offset)+' '+(Math.abs(item.offset)===1?'week':'weeks')+' before '+event+'.';
+      if(item.offset>0)return verb+' '+item.offset+' '+(item.offset===1?'week':'weeks')+' after '+event+'.';
+      return previous.kind==='milestone'?verb+' at '+previous.name+'.':verb+' when '+previous.name+' finishes.';
+    }
+    function updateRelationshipDescription(item){
+      const note=$('relationship-description-'+item.id);if(note)note.textContent=relationshipDescription(item,activeItems().indexOf(item));
+    }
+
+    function compactSourceDescription(item){
+      if(item.kind==='milestone')return 'Milestone';
+      if(!item.libraryPhaseId)return 'Link a Library phase to include its shared overlap rules.';
+      return 'Library: '+item.sourceName;
+    }
+    let rowSettingsId=null,rowSettingsOpener=null;
+    function renderRowLibraryChoices(selectedId){
+      const select=$('row-settings-source');select.replaceChildren();
+      const blank=procNode('option','No Library phase linked');blank.value='';select.append(blank);
+      libraryPhases.forEach(source=>{const option=procNode('option',source.name+' · '+source.weeks+' weeks');option.value=source.id;select.append(option);});
+      select.value=selectedId||'';
+    }
+    function openRowSettings(id){
+      const item=phases.find(p=>p.id===id);if(!item)return;
+      rowSettingsId=id;rowSettingsOpener=document.activeElement;
+      $('row-settings-title').textContent=item.kind==='milestone'?'Edit milestone':'Edit phase';
+      $('row-settings-name').value=item.name;
+      $('row-settings-library').hidden=item.kind==='milestone';$('row-settings-milestone').hidden=item.kind!=='milestone';
+      renderRowLibraryChoices(item.libraryPhaseId);$('row-settings-error').textContent='';$('row-settings-link-status').textContent='';
+      updateRowSettingsDetails();$('row-settings-dialog').showModal();
+    }
+    function updateRowSettingsDetails(){
+      const item=phases.find(p=>p.id===rowSettingsId);if(!item)return;
+      const sourceId=$('row-settings-source').value,temp={...item};
+      if(sourceId!==item.libraryPhaseId){
+        if(sourceId)bindLibrary(temp,sourceId,false);
+        else{delete temp.libraryPhaseId;delete temp.sourceName;delete temp.libraryDefaultWeeks;}
+      }
+      $('row-settings-duration').textContent=sourceDescription(temp);
+      const rules=rulesForPhase(sourceId),summary=$('row-settings-rules');summary.replaceChildren();
+      if(rules.length)rules.forEach(rule=>summary.append(procNode('p',ruleDescription(rule,sourceId))));else summary.textContent=sourceId?'No overlap rules defined.':'Select a Library phase to review its shared overlap rules.';
+      $('row-settings-configure').disabled=!sourceId;
+    }
+    function closeRowSettings(){
+      $('row-settings-dialog').close();
+      const row=$('phase-rows').querySelector('tr[data-item-id="'+rowSettingsId+'"]');
+      (row?.querySelector('.row-edit')||rowSettingsOpener)?.focus();
+    }
+    $('row-settings-source').addEventListener('change',updateRowSettingsDetails);
+    $('row-settings-configure').addEventListener('click',()=>openProcPhase($('row-settings-source').value));
+    $('row-settings-create').addEventListener('click',()=>openProcPhase(null,rowSettingsId));
+    $('proc-phase-dialog').addEventListener('close',()=>{if($('row-settings-dialog').open)updateRowSettingsDetails();});
+    document.querySelectorAll('[data-close-row]').forEach(button=>button.addEventListener('click',closeRowSettings));
+    $('row-settings-form').addEventListener('submit',event=>{
+      event.preventDefault();const item=phases.find(p=>p.id===rowSettingsId);if(!item)return;
+      const name=$('row-settings-name').value.trim();if(!name){$('row-settings-error').textContent='Enter a phase or milestone name.';return;}
+      item.name=name;const sourceId=$('row-settings-source').value;
+      if(item.kind!=='milestone'&&sourceId!==(item.libraryPhaseId||'')){
+        if(sourceId)bindLibrary(item,sourceId,false);
+        else{delete item.libraryPhaseId;delete item.sourceName;delete item.libraryDefaultWeeks;delete item.initialWeeks;delete item.fromTemplate;}
+      }
+      renderProcRows();refreshProcSelectors();procDirty();closeRowSettings();
+    });
+
+    function renderProcRows(){
+      const body=$('phase-rows');body.replaceChildren();
+      const hasRows=activeItems().length>0;
+      $('schedule-bottom-add').hidden=!hasRows;$('phase-empty').hidden=hasRows;$('phase-table-scroll').hidden=!hasRows;$('schedule-footnote').hidden=!hasRows;$('schedule-edit-scope').hidden=!hasRows;
+      activeItems().forEach((item,index)=>{
+        const row=procNode('tr');row.dataset.itemId=item.id;
+        const cell=(node,cls='')=>{const td=procNode('td',undefined,cls);td.append(typeof node==='string'?document.createTextNode(node):node);row.append(td);return td;};
+        const field=(type,value,key,label)=>{const input=procNode('input');input.type=type;input.value=value??'';input.dataset.id=item.id;input.dataset.key=key;input.setAttribute('aria-label',label);if(type==='number'){input.min='1';input.max=key==='weeks'?'1000':'104';input.step='1';}return input;};
+        cell(String(index+1));
+
+        const name=procNode('strong',item.name,'phase-label');
+        const nameCell=cell(name,'name-col');
+        nameCell.append(item.kind!=='milestone'&&!item.libraryPhaseId?procButton(compactSourceDescription(item),()=>openRowSettings(item.id),'source-note library-link-prompt'):procNode('span',compactSourceDescription(item),'source-note'));
+        if(item.kind!=='milestone'){
+          const rules=rulesForPhase(item.libraryPhaseId);
+          if(rules.length)nameCell.append(phaseRuleSummary(rules,item.libraryPhaseId));
+        }
+        const weeks=item.kind==='milestone'?procNode('span','—','phase-label'):field('number',item.weeks,'weeks',item.name+' duration in whole weeks; '+durationDefaultLabel(item));
+        const durationCell=cell(weeks,'duration-col');
+        if(item.kind!=='milestone'){
+          const note=procNode('span',durationSourceNote(item),'duration-note');note.id='duration-note-'+item.id;note.title=durationDefaultLabel(item);note.classList.toggle('changed',Number.isFinite(durationBaseline(item))&&item.weeks!==durationBaseline(item));weeks.setAttribute('aria-describedby',note.id);durationCell.append(note);
+        }
+        const relationCell=procNode('td',undefined,'relation-col');
+        if(index>0||item.offset){
+          const relation=procNode('div',undefined,'relationship'),select=procNode('select');select.dataset.id=item.id;select.dataset.key='relation';select.setAttribute('aria-label',item.name+' timing within this procurement');
+          [['sequence',index===0?'First item':'After previous item'],['overlap','Overlap'],['gap','Gap before']].forEach(([value,label])=>{const option=procNode('option',label);option.value=value;select.append(option);});
+          select.value=item.offset<0?'overlap':item.offset>0?'gap':'sequence';
+          const amount=field('number',Math.abs(item.offset)||1,'offset',item.name+' overlap or gap in active weeks');amount.disabled=!item.offset;
+          const amountControl=procNode('div',undefined,'relationship-amount');amountControl.hidden=!item.offset;amountControl.append(amount,procNode('span','weeks'));
+          relation.append(select,amountControl);relationCell.append(relation);
+        }
+        const explanation=procNode('p',relationshipDescription(item,index),'relationship-description'+(index===0&&!item.offset?' first-item':''));explanation.id='relationship-description-'+item.id;relationCell.append(explanation);row.append(relationCell);
+        const actions=procNode('div');const edit=procButton('Edit',()=>openRowSettings(item.id),'btn row-edit');edit.setAttribute('aria-label','Edit phase: '+item.name);actions.append(edit);const remove=procButton('×',()=>{
+          const selected=$('anchor-phase').value,wasAnchor=selected===String(item.id);
+          activeItems().splice(index,1);renderProcRows();refreshProcSelectors();
+          if(wasAnchor){$('anchor-phase').value='';isAddStudy?updateAnchor():updateAnchorSummary();}
+          procDirty();
+        },'row-remove');remove.setAttribute('aria-label','Remove '+item.name);actions.append(remove);
+        const grip=procButton('⠿',()=>{},'drag-handle');grip.dataset.dragItem=item.id;grip.setAttribute('aria-label','Move '+item.name+'. Hold to drag, or press Space then arrow keys.');grip.setAttribute('aria-pressed','false');actions.append(grip);cell(actions,'row-actions');body.append(row);
+      });updateRelationshipFeedback();
+    }
+    $('phase-rows').addEventListener('input',event=>{
+      const item=activeItems().find(p=>String(p.id)===event.target.dataset.id);if(!item)return;
+      const field=event.target,key=field.dataset.key;
+      if(key==='name')item[key]=field.value;
+      if(key==='weeks'||key==='offset')item[key]=(key==='offset'&&item.offset<0?-1:1)*Number(field.value);
+      procDirty();
+      if(key==='weeks')updateDurationSourceNote(item);
+      if(['weeks','offset'].includes(key)){if(key==='offset')acknowledgeRelation(item);updateRelationshipDescription(item);updateRelationshipFeedback();}
+      if(key==='name')refreshProcSelectors();
+    });
+    $('phase-rows').addEventListener('change',event=>{
+      const field=event.target,item=activeItems().find(p=>String(p.id)===field.dataset.id);if(!item)return;
+      if(field.dataset.key==='relation'){item.offset=field.value==='sequence'?0:field.value==='overlap'?-1:1;acknowledgeRelation(item);renderProcRows();}
+      if(field.dataset.key==='libraryPhaseId'){
+        if(field.value)bindLibrary(item,field.value,false);
+        else {delete item.libraryPhaseId;delete item.sourceName;delete item.libraryDefaultWeeks;delete item.initialWeeks;delete item.fromTemplate;}
+        renderProcRows();
+      }
+      refreshProcSelectors();procDirty();
+    });
+    function makeProcItem(name,weeks,sourceId=''){
+      const item={id:++nextOccurrence,name,weeks,offset:0,kind:weeks?'phase':'milestone',color:'#536ea1'};
+      if(sourceId)bindLibrary(item,sourceId,false);return item;
+    }
+    function appendProcItem(item){
+      activeItems().push(item);acknowledgeRelation(item);renderProcRows();refreshProcSelectors();procDirty();
+    }
+    let itemDialogIsAnchor=false,itemDialogKind='library',phaseDialogId=null,phaseLinkItemId=null,phaseRuleDraft=[],dialogOpener=null,itemDialogOpener=null;
+
+    function matchingProcPhases(query){
+      const search=query.trim().toLowerCase().replace(/\s+/g,' ');
+      return libraryPhases.filter(source=>source.name.toLowerCase().replace(/\s+/g,' ').includes(search));
+    }
+    function renderProcLibrary(){
+      const visible=matchingProcPhases($('proc-library-search').value),results=$('proc-library-results');
+      if($('proc-library').value&&!visible.some(source=>source.id===$('proc-library').value)){
+        $('proc-library').value='';updateProcItemSource();
+      }
+      results.replaceChildren();
+      visible.forEach(source=>{
+        const row=procNode('label',undefined,'proc-library-choice');
+        const radio=procNode('input');radio.type='radio';radio.name='proc-library-phase';radio.value=source.id;radio.checked=source.id===$('proc-library').value;
+        radio.addEventListener('change',()=>{if(!radio.checked)return;$('proc-library').value=source.id;updateProcItemSource();$('proc-item-status').textContent='';});
+        const swatch=procNode('i',undefined,'swatch');swatch.style.background=source.color;swatch.setAttribute('aria-hidden','true');
+        row.append(radio,swatch,procNode('strong',source.name),procNode('small',source.weeks+' weeks'));results.append(row);
+      });
+      $('proc-library-count').textContent='Showing '+visible.length+' of '+libraryPhases.length+' Library phases.';
+      $('proc-library-empty').hidden=visible.length>0;
+      $('proc-library-empty').textContent=libraryPhases.length?'No phases match this search. Try another name, or create a new phase below.':'No phases have been created in the Library yet. Create the first phase to add it to this procurement.';
+      $('proc-library-create-help').textContent=libraryPhases.length?'If nothing here meets your need, create a new phase.':'Create a reusable phase for this procurement and future schedules.';
+      $('proc-create-from-library').classList.toggle('primary',!libraryPhases.length);
+    }
+    function openProcItem(kind,asAnchor=false){
+      itemDialogOpener=document.activeElement;itemDialogKind=kind;itemDialogIsAnchor=asAnchor;
+      const isPhase=kind==='library';
+      $('proc-item-title').textContent=asAnchor?'Add anchor milestone':isPhase?'Add phase':'Add milestone';
+      $('proc-item-description').textContent=isPhase?'Browse or search the Library, then select a phase to review it. Create a new phase if none meets your need.':'Name the event or boundary to add to this procurement.';
+      $('proc-library-field').hidden=!isPhase;$('proc-library-search').disabled=!isPhase;
+      $('proc-item-weeks-field').hidden=!isPhase;$('proc-item-weeks').required=isPhase;
+      $('proc-library').value='';$('proc-library-search').value='';$('proc-item-status').textContent='';
+      $('proc-add-item').textContent=asAnchor?'Add and use as anchor':isPhase?'Add phase to procurement':'Add milestone to procurement';
+      $('proc-item-position-field').hidden=!asAnchor;$('proc-item-position').replaceChildren();
+      if(asAnchor){
+        const first=procNode('option','At the start of the schedule');first.value='';$('proc-item-position').append(first);
+        activeItems().forEach(item=>{const option=procNode('option','After '+item.name);option.value=String(item.id);$('proc-item-position').append(option);});
+        $('proc-item-position').value=String(activeItems().at(-1)?.id??'');
+      }
+      updateProcItemSource();if(isPhase)renderProcLibrary();
+      $('proc-item-dialog').showModal();(isPhase?$('proc-library-search'):$('proc-item-name')).focus();
+    }
+    $('add-anchor-milestone').addEventListener('click',()=>openProcItem('milestone',true));
+    function updateProcItemSource(){
+      const source=libraryById($('proc-library').value),isPhase=itemDialogKind==='library';
+      $('proc-item-details').hidden=isPhase&&!source;$('proc-add-item').disabled=isPhase&&!source;
+      $('proc-item-name').disabled=isPhase&&!source;$('proc-item-weeks').disabled=!isPhase||!source;
+      $('proc-item-name').value=source&&isPhase?source.name:'';$('proc-item-weeks').value=source&&isPhase?source.weeks:'';
+      $('proc-item-rules').hidden=!isPhase||!source;$('proc-item-rule-summary').replaceChildren();
+      if(isPhase&&source){
+        const rules=rulesForPhase(source.id);
+        if(rules.length)rules.forEach(rule=>$('proc-item-rule-summary').append(procNode('p',ruleDescription(rule,source.id))));else $('proc-item-rule-summary').append(procNode('p','No overlap rules defined.'));
+      }
+      updateProcItemDurationNote();
+    }
+    function updateProcItemDurationNote(){
+      if(itemDialogKind==='milestone'){$('proc-item-source').textContent='A milestone marks a point in time and has no duration.';return;}
+      const source=libraryById($('proc-library').value);
+      if(!source){$('proc-item-source').textContent='Select a phase to review its Library defaults.';return;}
+      const overridden=Number($('proc-item-weeks').value)!==source.weeks;
+      $('proc-item-source').textContent='Library default: '+source.weeks+" weeks for '"+source.name+"'. "+(overridden?'This duration is overridden for this procurement.':'You can override the name or duration for this procurement without changing the Library.')+' Shared overlap rules remain linked to the Library phase.';
+    }
+    $('proc-library-search').addEventListener('input',renderProcLibrary);
+    $('proc-library-search').addEventListener('keydown',event=>{if(event.key==='Enter')event.preventDefault();});
+    $('proc-item-weeks').addEventListener('input',updateProcItemDurationNote);
+    $('proc-create-from-library').addEventListener('click',()=>openProcPhase());
+    function closeProcDialog(kind){
+      $('proc-'+kind+'-dialog').close();
+      (kind==='item'?itemDialogOpener:dialogOpener)?.focus();
+    }
+    document.querySelectorAll('[data-close-proc]').forEach(button=>button.addEventListener('click',()=>closeProcDialog(button.dataset.closeProc)));
+    $('proc-item-dialog').addEventListener('cancel',event=>{event.preventDefault();closeProcDialog('item');});
+    $('proc-phase-dialog').addEventListener('cancel',event=>{event.preventDefault();closeProcDialog('phase');});
+    $('proc-item-form').addEventListener('submit',event=>{
+      event.preventDefault();const isPhase=itemDialogKind==='library',source=isPhase?libraryById($('proc-library').value):null;
+      if(isPhase&&!source){$('proc-item-status').textContent='Select a Library phase, or create a new phase.';return;}
+      const weeks=isPhase?Number($('proc-item-weeks').value):0,name=$('proc-item-name').value.trim();
+      if(!name){$('proc-item-status').textContent='Enter a name.';return;}
+      if(isPhase&&(!Number.isInteger(weeks)||weeks<1||weeks>1000)){$('proc-item-status').textContent='Enter a duration of 1–1000 whole weeks.';return;}
+      const item=makeProcItem(name,weeks,source?.id||'');
+      if(itemDialogIsAnchor){
+        const items=activeItems(),after=items.findIndex(p=>String(p.id)===$('proc-item-position').value);
+        items.splice(after+1,0,item);acknowledgeRelation(item);renderProcRows();refreshProcSelectors();
+        $('anchor-phase').value=String(item.id);isAddStudy?updateAnchor():updateAnchorSummary();procDirty();
+      }else appendProcItem(item);
+      closeProcDialog('item');
+    });
+    function renderProcRuleDraft(){
+      $('proc-rule-rows').replaceChildren();$('proc-rule-empty').hidden=!!phaseRuleDraft.length;
+      phaseRuleDraft.forEach((rule,index)=>{
+        const row=procNode('div',undefined,'proc-rule-row'),pair=procNode('div',undefined,'rule-pair');
+        const label=procNode('label','Which phase(s) in other procurements could clash problematically with this one?','field'),select=procNode('select');select.required=true;
+        const blank=procNode('option','Choose a phase');blank.value='';select.append(blank);
+        const selfId=phaseDialogId||'__new__',options=phaseDialogId?libraryPhases:[{id:selfId,name:$('proc-phase-name').value||'This phase'},...libraryPhases];
+        options.forEach(p=>{const option=procNode('option',p.name+(p.id===selfId?' (same phase)':''));option.value=p.id;select.append(option);});
+        select.value=rule.target||'';select.addEventListener('change',()=>rule.target=select.value);label.append(select);
+        const severityLabel=procNode('label','Severity','field'),severity=procNode('select');
+        [['warning','Warning — undesirable but manageable'],['critical','Critical clash — unacceptable overlap']].forEach(([value,text])=>{const option=procNode('option',text);option.value=value;severity.append(option);});severity.value=rule.severity;severity.addEventListener('change',()=>rule.severity=severity.value);severityLabel.append(severity);pair.append(label,severityLabel);
+        const reasonLabel=procNode('label','Explanation (optional)','field'),reason=procNode('textarea');reason.rows=2;reason.value=rule.reason||'';reason.addEventListener('input',()=>rule.reason=reason.value);reasonLabel.append(reason);
+        row.append(pair,reasonLabel,procButton('Remove rule',()=>{phaseRuleDraft.splice(index,1);renderProcRuleDraft();}));$('proc-rule-rows').append(row);
+      });
+    }
+    function openProcPhase(id=null,linkItemId=null){
+      dialogOpener=document.activeElement;phaseDialogId=id;phaseLinkItemId=linkItemId;
+      const source=libraryById(id),linkItem=phases.find(item=>item.id===linkItemId);
+      $('proc-phase-title').textContent=source?'Shared rules: '+source.name:'Create phase';
+      $('proc-phase-name').value=source?.name||(linkItem?$('row-settings-name').value.trim():$('proc-item-dialog').open?$('proc-library-search').value.trim():'');
+      $('proc-phase-weeks').value=source?.weeks||linkItem?.weeks||2;$('proc-phase-color').value=source?.color||'#315ed4';
+      ['proc-phase-name','proc-phase-weeks','proc-phase-color'].forEach(key=>$(key).readOnly=!!source);$('proc-phase-color').disabled=!!source;
+      $('proc-phase-help').textContent=source?'These rules are shared by both phases wherever they occur in the demo pipeline. Duration and colour defaults are edited in the Library. Saving rules refreshes clashes and does not move any dates.':'Create a reusable Library phase and add it to this procurement. All rules below are included when saving.';
+      if(linkItem)$('proc-phase-help').textContent='Create a reusable Library phase. It will be selected in the phase settings; choose Save phase settings to confirm the link. This procurement’s name and duration are retained.';
+      $('proc-save-phase').textContent=source?'Save shared rules':linkItem?'Create Library phase':'Create phase and add to procurement';
+      phaseRuleDraft=source?rulesForPhase(id).map(rule=>({id:rule.id,target:rule.a===id?rule.b:rule.a,severity:rule.severity,reason:rule.reason})):[];
+      $('proc-modal-status').textContent='';renderProcRuleDraft();$('proc-phase-dialog').showModal();
+    }
+    $('proc-add-rule').addEventListener('click',()=>{phaseRuleDraft.push({target:'',severity:'warning',reason:''});renderProcRuleDraft();$('proc-rule-rows').lastElementChild.querySelector('select').focus();});
+    $('proc-phase-form').addEventListener('submit',event=>{
+      event.preventDefault();
+      if(!$('proc-phase-name').value.trim()){ $('proc-modal-status').textContent='Enter a phase name.';return; }
+      if(!phaseDialogId&&libraryPhases.some(source=>source.name.toLowerCase()===$('proc-phase-name').value.trim().toLowerCase())){ $('proc-modal-status').textContent='That Library phase already exists. Cancel and select it from the Library list.';return; }
+      const targets=phaseRuleDraft.map(rule=>rule.target);
+      if(new Set(targets).size!==targets.length){$('proc-modal-status').textContent='Each pair of phases needs only one shared rule. Remove the duplicate.';return;}
+      const previousLibrary=libraryPhases.map(p=>({...p})),previousRules=pipelineRules.map(rule=>({...rule}));
+      let id=phaseDialogId;
+      if(!id){id='created-'+(++nextLibrary);libraryPhases.push({id,name:$('proc-phase-name').value.trim(),weeks:Number($('proc-phase-weeks').value),color:$('proc-phase-color').value});}
+      pipelineRules=pipelineRules.filter(rule=>rule.a!==id&&rule.b!==id);
+      phaseRuleDraft.forEach(rule=>pipelineRules.push({id:rule.id||'rule-'+(++nextRule),a:id,b:rule.target==='__new__'?id:rule.target,severity:rule.severity,reason:rule.reason.trim()}));
+      try{window.LTPPDemo.saveProcLibrary(libraryPhases,pipelineRules);}
+      catch(error){libraryPhases.splice(0,libraryPhases.length,...previousLibrary);pipelineRules=previousRules;$('proc-modal-status').textContent=error.message;return;}
+
+      if(!phaseDialogId){
+        const source=libraryById(id);
+        if(phaseLinkItemId!==null){renderRowLibraryChoices(id);updateRowSettingsDetails();$('row-settings-link-status').textContent='Library phase created. Save phase settings to confirm the link.';}
+        else appendProcItem(makeProcItem(source.name,source.weeks,id));
+      }
+      else {
+        renderProcRows();
+        if(isAddStudy){appendRuleReview();}else{renderIssues();redraw();}
+      }
+      const closeChooser=!phaseDialogId&&phaseLinkItemId===null&&$('proc-item-dialog').open;
+      closeProcDialog('phase');if(closeChooser)closeProcDialog('item');
+      $('feedback').textContent='Shared overlap rules saved to this browser’s Library. No scheduled dates were moved.';
+    });
+    document.querySelectorAll('[data-add-proc]').forEach(button=>button.addEventListener('click',()=>openProcItem(button.dataset.addProc)));
+
+function procStatus(message){$('reorder-status').textContent=message;}
+    let dragState=null,dragAnimation=0;
+    function reorderRows(){return [...$('phase-rows').querySelectorAll('tr[data-item-id]')];}
+    function markDropPosition(slot){
+      if(!dragState)return;
+      const rows=reorderRows(),state=dragState,previous=state.to;
+      state.to=Math.max(0,Math.min(rows.length-1,slot>state.from?slot-1:slot));
+      rows.forEach(row=>row.classList.remove('drop-before','drop-after'));
+      if(slot>=rows.length)rows[rows.length-1]?.classList.add('drop-after');else rows[slot]?.classList.add('drop-before');
+      $('reorder-ghost').textContent=`${state.label} → position ${state.to+1}`;
+      if(state.keyboard&&state.to!==previous)procStatus(`${state.label}: position ${state.to+1} of ${rows.length}. Press Space or Enter to drop, or Escape to cancel.`);
+    }
+    function updatePointerPosition(){
+      const state=dragState;if(!state||state.keyboard||!state.active)return;
+      const rows=reorderRows(),rect=$('phase-table-scroll').getBoundingClientRect();
+      state.validDrop=state.x>=rect.left&&state.x<=rect.right&&state.y>=rect.top&&state.y<=rect.bottom;
+      let slot=rows.length;
+      for(let index=0;index<rows.length;index++){const bounds=rows[index].getBoundingClientRect();if(state.y<bounds.top+bounds.height/2){slot=index;break;}}
+      markDropPosition(slot);
+      if(!state.validDrop)$('reorder-ghost').textContent=`${state.label} · release inside the table to place`;
+      const ghost=$('reorder-ghost');ghost.style.left=`${Math.max(8,Math.min(state.x+14,innerWidth-ghost.offsetWidth-8))}px`;ghost.style.top=`${Math.max(8,Math.min(state.y+14,innerHeight-ghost.offsetHeight-8))}px`;
+    }
+    function animateReorder(){
+      if(!dragState||dragState.keyboard||!dragState.active)return;
+      const rect=$('phase-table-scroll').getBoundingClientRect();
+      if(dragState.x>=rect.left&&dragState.x<=rect.right){if(dragState.y<75)window.scrollBy(0,-14);else if(dragState.y>innerHeight-75)window.scrollBy(0,14);}
+      updatePointerPosition();dragAnimation=requestAnimationFrame(animateReorder);
+    }
+    function activateReorder(){
+      const state=dragState;if(!state)return;
+      state.active=true;state.handle.setAttribute('aria-pressed','true');state.handle.closest('tr').classList.add('dragging');$('reorder-ghost').hidden=false;
+      procStatus(`Picked up ${state.label}. Choose its new position.`);
+      if(state.keyboard){const rect=state.handle.getBoundingClientRect();$('reorder-ghost').style.left=`${Math.max(8,Math.min(rect.left-180,innerWidth-360))}px`;$('reorder-ghost').style.top=`${Math.max(8,rect.top-45)}px`;markDropPosition(state.from);}else animateReorder();
+    }
+    function finishReorder(apply,restoreFocus=true){
+      if(!dragState)return;
+      const state=dragState;dragState=null;cancelAnimationFrame(dragAnimation);
+      if(state.pointerId!==undefined&&state.handle.hasPointerCapture(state.pointerId))state.handle.releasePointerCapture(state.pointerId);
+      state.handle.setAttribute('aria-pressed','false');reorderRows().forEach(row=>row.classList.remove('dragging','drop-before','drop-after'));$('reorder-ghost').hidden=true;
+      const commit=apply&&state.active&&(state.keyboard||state.validDrop);
+      if(commit&&state.from!==state.to){const [item]=activeItems().splice(state.from,1);activeItems().splice(state.to,0,item);procDirty();renderProcRows();refreshProcSelectors();procStatus(`${state.label} moved to position ${state.to+1}.`);}
+      else if(state.active)procStatus(commit?'Row kept in its original position.':'Reordering cancelled. The phase order is unchanged.');
+      if(restoreFocus)$('phase-rows').querySelector(`button[data-drag-item="${state.id}"]`)?.focus();
+    }
+    $('phase-rows').addEventListener('pointerdown',event=>{
+      const grip=event.target.closest('.drag-handle');if(!grip||event.button!==0)return;
+      event.preventDefault();finishReorder(false,false);grip.focus();
+      const from=activeItems().findIndex(item=>String(item.id)===grip.dataset.dragItem),item=activeItems()[from];
+      dragState={id:item.id,label:item.name,from,to:from,handle:grip,pointerId:event.pointerId,x:event.clientX,y:event.clientY,startX:event.clientX,startY:event.clientY,keyboard:false,active:false,validDrop:true};grip.setPointerCapture(event.pointerId);
+    });
+    $('phase-rows').addEventListener('pointermove',event=>{
+      if(!dragState||dragState.keyboard||event.pointerId!==dragState.pointerId)return;
+      dragState.x=event.clientX;dragState.y=event.clientY;
+      if(!dragState.active&&Math.hypot(event.clientX-dragState.startX,event.clientY-dragState.startY)>4)activateReorder();
+      if(dragState.active)updatePointerPosition();
+    });
+    $('phase-rows').addEventListener('pointerup',event=>{if(dragState&&!dragState.keyboard&&event.pointerId===dragState.pointerId){updatePointerPosition();finishReorder(true);}});
+    $('phase-rows').addEventListener('pointercancel',()=>finishReorder(false));
+    $('phase-rows').addEventListener('lostpointercapture',()=>{if(dragState&&!dragState.keyboard)finishReorder(false);});
+    $('phase-rows').addEventListener('keydown',event=>{
+      const grip=event.target.closest('.drag-handle');if(!grip)return;
+      if(event.key===' '||event.key==='Enter'){
+        event.preventDefault();if(dragState?.keyboard){finishReorder(true);return;}if(dragState)return;
+        const from=activeItems().findIndex(item=>String(item.id)===grip.dataset.dragItem),item=activeItems()[from];dragState={id:item.id,label:item.name,from,to:from,handle:grip,keyboard:true,active:false};activateReorder();return;
+      }
+      if(!dragState?.keyboard)return;
+      if(['ArrowUp','ArrowDown','Home','End'].includes(event.key)){event.preventDefault();const count=activeItems().length;const to=event.key==='Home'?0:event.key==='End'?count-1:Math.max(0,Math.min(count-1,dragState.to+(event.key==='ArrowUp'?-1:1)));markDropPosition(to>dragState.from?to+1:to);}
+      else if(event.key==='Tab')finishReorder(false,false);
+    });
+    $('phase-rows').addEventListener('focusout',event=>{if(dragState?.keyboard&&event.target===dragState.handle)finishReorder(false,false);});
+    document.addEventListener('keydown',event=>{if(event.key==='Escape'&&dragState){event.preventDefault();finishReorder(false);}});
+    window.addEventListener('blur',()=>finishReorder(false,false));
+
+    
+
+    // Weekly planning uses Monday boundaries; actual anchor dates are retained separately.
+    const planningDayMs=86400000;
+    function mondayOfWeek(time){
+      return time-((new Date(time).getUTCDay()+6)%7)*planningDayMs;
+    }
+    function weeklyAnchorBoundary(actual){return mondayOfWeek(actual);}
+    function planningFinish(item){
+      return item.kind==='milestone'?item.s:item.weekly?item.e-3*planningDayMs:item.e;
+    }
+    function rangeFinish(start,end,weekly){
+      const friday=end-3*planningDayMs;
+      return weekly&&new Date(end).getUTCDay()===1&&friday>=start?friday:end;
+    }
+    function anchorDetailLines(actual,plotted){
+      return ['Actual anchor date: '+format(actual),'Planning milestone: '+format(plotted)];
+    }
+    // End weekly planning helpers.
+
+    function shutdown(year) {
+      const christmas = Date.UTC(year,11,25);
+      const start = christmas - ((new Date(christmas).getUTCDay() + 6) % 7) * dayMs;
+      return [start, start + 14 * dayMs];
+    }
+    function isPaused(time) {
+      const year = new Date(time).getUTCFullYear();
+      return [year-1, year].some(y => { const [start,end] = shutdown(y); return time >= start && time < end; });
+    }
+    function activeDays(start, end) {
+      let days = 0;
+      for (let cursor=start; cursor<end; cursor+=dayMs) if (!isPaused(cursor)) days++;
+      return days;
+    }
+    function moveActive(time, days) {
+      let cursor=time, remaining=Math.abs(days), direction=Math.sign(days), limit=0;
+      while (remaining > 0) {
+        if (++limit > 20000) throw new Error('This layout trial supports schedules up to approximately 50 years.');
+        if (direction < 0) cursor-=dayMs;
+        if (!isPaused(cursor)) remaining--;
+        if (direction > 0) cursor+=dayMs;
+      }
+      return cursor;
+    }
+    function invalidate() {
+      hideAddTip();
+      preview=null;
+      $('review-section').hidden=true;
+      $('preview').classList.add('primary');$('confirm').classList.remove('primary');
+      $('review-result').hidden=true;
+      $('review-empty').hidden=false;
+      $('review-empty').textContent='Preview the current entries to review dates and anchor consistency.';
+      $('confirm').disabled=true;
+      $('feedback').textContent='';
+    }
+    function renderAnchor() {
+      const selected=$('anchor-phase').value;
+      $('anchor-phase').replaceChildren();
+      const placeholder=procNode('option','Choose an anchor milestone');placeholder.value='';$('anchor-phase').append(placeholder);
+      phases.filter(item=>item.kind==='milestone').forEach(item=>{const option=procNode('option',item.name||'Unnamed milestone');option.value=item.id;$('anchor-phase').append(option);});
+      $('anchor-phase').value=phases.some(item=>item.kind==='milestone'&&String(item.id)===selected)?selected:'';
+      updateAnchor();
+    }
+    function updateAnchor() {
+      const item=phases.find(p=>String(p.id)===$('anchor-phase').value&&p.kind==='milestone'),actual=parseISO($('anchor-date').value);
+      $('anchor-summary').hidden=!item||!Number.isFinite(actual);
+      if(item&&Number.isFinite(actual))$('anchor-summary').textContent=item.name+' · '+anchorDetailLines(actual,weeklyAnchorBoundary(actual)).join(' · ');
+    }
+    function renderRows(){renderProcRows();}
+    let pendingTemplateId=null;
+    const templateNames=Object.fromEntries(connectedLibrary.templates.map(template=>[template.id,template.name]));
+    function populateTemplates(){
+      $('template').replaceChildren();const blank=procNode('option','Choose a template');blank.value='';$('template').append(blank);
+      connectedLibrary.templates.forEach(template=>{const option=procNode('option',template.name);option.value=template.id;$('template').append(option);});$('template').value='';$('load-template').disabled=true;
+    }
+    function applyTemplate(selected){
+      const template=connectedLibrary.templates.find(item=>item.id===selected);if(!template)return;
+      phases=template.items.map(item=>{
+        const result=makeProcItem(item.label,item.weeks);
+        if(item.kind==='phase')bindLibrary(result,item.typeId,true);
+        result.color=item.color;result.offset=item.relation==='overlap'?-item.amount:item.relation==='gap'?item.amount:0;return result;
+      });
+      const anchorIndex=template.items.findIndex(item=>item.id===template.anchorId);
+      resetRelationshipReview();renderRows();renderAnchor();
+      $('anchor-phase').value=anchorIndex>=0?String(phases[anchorIndex].id):'';updateAnchor();invalidate();
+      $('feedback').textContent=template.name+' template applied. Review the phases and set the anchor before previewing.';
+    }
+    function loadTemplate(){
+      const selected=$('template').value;if(!Object.hasOwn(templateNames,selected))return;
+      if(!phases.length){applyTemplate(selected);return;}
+      pendingTemplateId=selected;
+      $('template-replace-description').textContent='Use the '+templateNames[selected]+' template to replace your current schedule of '+phases.length+' item'+(phases.length===1?'':'s')+'?';
+      $('template-replace-dialog').showModal();$('cancel-template-replace').focus();
+    }
+    function closeTemplateReplacement(){
+      $('template-replace-dialog').close();pendingTemplateId=null;$('load-template').focus();
+    }
+    $('template-replace-form').addEventListener('submit',event=>{
+      event.preventDefault();const selected=pendingTemplateId;if(!selected)return;
+      applyTemplate(selected);closeTemplateReplacement();
+    });
+    $('close-template-replace').addEventListener('click',closeTemplateReplacement);
+    $('cancel-template-replace').addEventListener('click',closeTemplateReplacement);
+    $('template-replace-dialog').addEventListener('cancel',event=>{event.preventDefault();closeTemplateReplacement();});
+    $('load-template').addEventListener('click',loadTemplate);
+    $('template').addEventListener('change',()=>{
+      const selected=Object.hasOwn(templateNames,$('template').value);
+      $('load-template').disabled=!selected;
+      $('load-template').classList.toggle('primary',selected);
+    });
+
+    ['procurement-name','anchor-date','anchor-phase'].forEach(id=>$(id).addEventListener('input',()=>{updateAnchor();invalidate();}));
+    function calculate() {
+      relationshipGate();
+      if(!phases.length)throw new Error('Add at least one phase or milestone before previewing.');
+      if(!$('procurement-name').value.trim())throw new Error('Enter a procurement name.');
+      const anchor=parseISO($('anchor-date').value),anchorIndex=phases.findIndex(item=>String(item.id)===$('anchor-phase').value);
+      if(!Number.isFinite(anchor)||anchorIndex<0||phases[anchorIndex].kind!=='milestone')throw new Error('Specify the actual anchor date and select an anchor milestone.');
+      const data=phases.map((item,index)=>{
+        if(!item.name.trim())throw new Error('Enter a name for row '+(index+1)+'.');
+        if(item.kind!=='milestone'&&(!Number.isInteger(item.weeks)||item.weeks<1||item.weeks>1000))throw new Error(item.name+': enter a whole-week duration from 1 to 1000.');
+        if(!Number.isInteger(item.offset)||Math.abs(item.offset)>104)throw new Error(item.name+': overlap or gap must use up to 104 whole weeks.');
+        if(item.offset<0&&(index===0||-item.offset>Math.min(item.weeks,phases[index-1].weeks)))throw new Error(item.name+': overlap cannot exceed either adjacent phase’s duration.');
+        return {...item,weekly:true,color:item.color||palette[index%palette.length]};
+      });
+      const planningAnchor=weeklyAnchorBoundary(anchor),anchored=data[anchorIndex];
+      anchored.s=planningAnchor;anchored.e=planningAnchor;
+      for(let i=anchorIndex-1;i>=0;i--){data[i].e=moveActive(data[i+1].s,-data[i+1].offset*7);data[i].s=moveActive(data[i].e,-data[i].weeks*7);}
+      for(let i=anchorIndex+1;i<data.length;i++){data[i].s=moveActive(data[i-1].e,data[i].offset*7);data[i].e=moveActive(data[i].s,data[i].weeks*7);}
+      return {data,anchor,planningAnchor,anchorIndex,anchorName:anchored.name,weekly:true,errors:[]};
+    }
+    function checkBox(title,text,type='') {
+      const box=document.createElement('div'); box.className=`check ${type}`;
+      const heading=document.createElement('strong'); heading.textContent=title; box.append(heading,document.createTextNode(text)); $('checks').append(box); return box;
+    }
+    function review() {
+      try {
+        preview=calculate(); $('checks').replaceChildren(); $('review-rows').replaceChildren();
+        const {data,anchor,planningAnchor,anchorIndex}=preview;
+        data.forEach((item,index)=> {
+          const row=document.createElement('tr');
+          const days=activeDays(item.s,item.e), duration=item.kind==='milestone' ? 'Milestone' : `${Number((days/7).toFixed(2))} active weeks`;
+          [String(index+1),item.name,format(item.s),format(planningFinish(item)),duration].forEach(value=> {const td=document.createElement('td');td.textContent=value;row.append(td);}); $('review-rows').append(row);
+        });
+        checkBox('Christmas and New Year weeks','If a phase runs through the two weeks covering Christmas and New Year, those weeks are skipped. The phase still receives its full allocated number of weeks.');
+        appendRuleReview();
+        checkBox('Clash guidance — placeholder','The explanation of how clashes will be identified when adding a procurement, and any actions required, is still to be agreed.','warning');
+        if (!preview.errors.length) checkBox('Anchor checked',anchorDetailLines(anchor,planningAnchor).join(' · '));
+        const start=Math.min(...data.map(p=>p.s)), end=Math.max(...data.map(p=>p.e));
+        $('schedule-summary').replaceChildren(); const summary=document.createElement('strong'); summary.textContent=`${format(start)} → ${format(Math.max(...data.map(planningFinish)))}`; $('schedule-summary').append(summary,document.createElement('br'),document.createTextNode(`${data.filter(p=>p.kind==='phase').length} phases · ${data.filter(p=>p.kind==='milestone').length} milestones`));
+        $('view-start').value=iso(start); $('review-empty').hidden=true; $('review-result').hidden=false;$('review-section').hidden=false; $('feedback').textContent='Preview ready. Review the schedule and overlap rules before confirming.'; drawTimeline(); updateConfirm();$('review-section').scrollIntoView({behavior:'smooth',block:'start'});
+      } catch(error) { invalidate(); $('feedback').textContent=error.message; }
+    }
+
+    function appendRuleReview(){
+      $('rule-review-box')?.remove();$('library-link-review-box')?.remove();
+      if(!preview)return;
+      const unlinked=preview.data.filter(item=>item.kind==='phase'&&!item.libraryPhaseId);
+      if(unlinked.length){const notice=checkBox('Library links need review',unlinked.map(item=>item.name).join(', ')+': link a Library phase to include its shared overlap rules. Names alone do not establish a link.','warning');notice.id='library-link-review-box';}
+      const configured=preview.data.filter(item=>item.kind==='phase'&&item.libraryPhaseId);
+      const rules=[...new Map(configured.flatMap(item=>rulesForPhase(item.libraryPhaseId)).map(rule=>[rule.id,rule])).values()];
+      const box=checkBox(rules.length?'Shared overlap rules':'No overlap rules defined',rules.length?'These rules apply to their Library phases wherever used across the pipeline.':'No cross-procurement restrictions have been specified. Names alone do not create rules.','warning');box.id='rule-review-box';
+      const list=procNode('ul');configured.forEach(item=>rulesForPhase(item.libraryPhaseId).forEach(rule=>list.append(procNode('li',item.name+': '+ruleDescription(rule,item.libraryPhaseId)))));if(list.children.length)box.append(list);
+    }
+
+    function updateConfirm() { const ready=!!preview&&!preview.errors.length;$('confirm').disabled=!ready;$('confirm').classList.toggle('primary',ready);$('preview').classList.toggle('primary',!ready); }
+
+    function hideAddTip(){window.LTPPTooltips.hide();}
+    function bindAddTooltip(button,lines){
+      window.LTPPTooltips.bind(button,()=>$('procurement-name').value,lines);
+    }
+
+
+    function addTimelineMonths(time,months){
+      const date=new Date(time),day=date.getUTCDate();
+      date.setUTCDate(1);date.setUTCMonth(date.getUTCMonth()+months);
+      const last=new Date(Date.UTC(date.getUTCFullYear(),date.getUTCMonth()+1,0)).getUTCDate();
+      date.setUTCDate(Math.min(day,last));return date.getTime();
+    }
+    function timelineGeometry(data,requestedStart,view,measuredWidth,durationOverride=null){
+      const viewportWidth=Math.max(1,measuredWidth||850);
+      const labelWidth=Math.round(Math.min(190,Math.max(90,viewportWidth*.25),Math.max(0,viewportWidth-48)));
+      const visibleWidth=viewportWidth-labelWidth,procurementStart=Math.min(...data.map(item=>item.s)),procurementEnd=Math.max(...data.map(item=>item.e)),fit=view==='all';
+      if(fit){
+        const start=procurementStart,end=Math.max(procurementEnd,start+7*dayMs),duration=end-start;
+        return {fit,view,viewportWidth,labelWidth,visibleWidth,start,end,duration,pixelsPerDay:visibleWidth/(duration/dayMs),axisWidth:visibleWidth,canvasWidth:viewportWidth,scrollLeft:0,visibleStart:start};
+      }
+      const months=view==='6'?6:12,duration=durationOverride>0?durationOverride:addTimelineMonths(requestedStart,months)-requestedStart;
+      const start=Math.min(procurementStart,requestedStart),end=Math.max(procurementEnd,requestedStart+duration);
+      const pixelsPerDay=visibleWidth/(duration/dayMs),axisWidth=(end-start)/dayMs*pixelsPerDay;
+      return {fit,view,viewportWidth,labelWidth,visibleWidth,start,end,duration,pixelsPerDay,axisWidth,canvasWidth:labelWidth+axisWidth,scrollLeft:(requestedStart-start)/dayMs*pixelsPerDay,visibleStart:requestedStart};
+    }
+    let timelineViewport=null,timelineResizeFrame=0;
+
+
+    function tooltipDuration(start,end,weeks){
+      const christmas=activeDays(start,end)<(end-start)/planningDayMs;
+      return weeks+' active week'+(weeks===1?'':'s')+(christmas?'; Christmas and New Year weeks are skipped':'')+'.';
+    }
+
+    function phaseDurationSummary(p,schedule){
+      const weeks=Number((activeDays(p.s,p.e)/7).toFixed(2));
+      const overlaps=schedule.filter(other=>other.id!==p.id&&other.kind!=='milestone')
+        .map(other=>({name:other.name,weeks:Number((activeDays(Math.max(p.s,other.s),Math.min(p.e,other.e))/7).toFixed(2))}))
+        .filter(other=>other.weeks>0);
+      let text=weeks+' active week'+(weeks===1?'':'s');
+      if(overlaps.length===1)text+='; '+overlaps[0].weeks+' of which overlap with '+overlaps[0].name;
+      else if(overlaps.length>1)text+='; overlaps with '+overlaps.map(other=>other.name+' ('+other.weeks+' active week'+(other.weeks===1?'':'s')+')').join(' and ');
+      if(activeDays(p.s,p.e)<(p.e-p.s)/planningDayMs)text+='; Christmas and New Year weeks are skipped';
+      return text+'.';
+    }
+    function tooltipLines(phases,a,b,gap,schedule=phases){
+      if(gap)return ['Pipeline adjustment gap',format(a)+' → '+format(b),'No activity scheduled.'];
+      if(phases.length>1)return [phases.map(p=>p.name).join(' + '),'Overlap: '+format(a)+' → '+format(rangeFinish(a,b,true)),tooltipDuration(a,b,activeDays(a,b)/7)];
+      const p=phases[0];
+      return [p.name,'Planning dates: '+format(p.s)+' → '+format(planningFinish(p)),phaseDurationSummary(p,schedule)];
+    }
+
+    function drawTimeline({preservePosition=false}={}) {
+      hideAddTip();
+      if (!preview) return;
+      const {data,anchor,planningAnchor}=preview;
+      const scroller=$('timeline-scroll'),view=$('view-length').value;
+      let requestedStart=parseISO($('view-start').value);
+      const preserve=preservePosition&&timelineViewport?.view===view;
+      if(preserve)requestedStart=timelineViewport.visibleStart;
+      if(!Number.isFinite(requestedStart))return;
+      const geometry=timelineGeometry(data,requestedStart,view,scroller.clientWidth,preserve?timelineViewport.duration:null),{start,end,axisWidth,pixelsPerDay}=geometry;
+      const canvas=$('timeline-canvas');canvas.style.width=geometry.canvasWidth+'px';canvas.style.setProperty('--timeline-label-width',geometry.labelWidth+'px');
+      $('view-start').disabled=geometry.fit;$('view-start').value=iso(Math.round(geometry.visibleStart/dayMs)*dayMs);
+      const scrollable=geometry.axisWidth>geometry.visibleWidth+.5;
+      $('timeline-scroll-help').hidden=!scrollable;
+      if(scrollable)scroller.setAttribute('aria-describedby','timeline-scroll-help');else scroller.removeAttribute('aria-describedby');
+      const percent=time=>(time-start)/(end-start)*100;
+      $('ruler').replaceChildren();$('track').replaceChildren();$('legend').replaceChildren();$('timeline-name').textContent=$('procurement-name').value;
+      const tickDays=7*Math.max(1,Math.ceil(132/pixelsPerDay/7));
+      const tick=(time,align)=>{
+        const label=document.createElement('span');label.className='tick';label.style.left=percent(time)+'%';label.style.transform=align==='end'?'translateX(-100%)':align==='middle'?'translateX(-50%)':'none';label.textContent=format(time);$('ruler').append(label);
+      };
+      tick(start,'start');
+      for(let time=start+tickDays*dayMs;time<end;time+=tickDays*dayMs){if((end-time)/dayMs*pixelsPerDay<132)break;tick(time,'middle');}
+      if(axisWidth>=160)tick(end,'end');
+      const gridDays=7*Math.max(1,Math.ceil(32/pixelsPerDay/7)),gridWidth=gridDays*pixelsPerDay;
+      $('track').style.background='repeating-linear-gradient(to right,transparent 0 '+(gridWidth-1)+'px,#e7ecf3 '+(gridWidth-1)+'px '+gridWidth+'px)';
+      $('track').style.backgroundPositionX=(mondayOfWeek(start)-start)/dayMs*pixelsPerDay+'px';
+      const bounds=[...new Set([start,end,...data.flatMap(p=>[p.s,p.e]).filter(t=>t>start&&t<end)])].sort((a,b)=>a-b);
+      for(let i=0;i<bounds.length-1;i++) {
+        const a=bounds[i],b=bounds[i+1],active=data.filter(p=>p.s<b&&p.e>a&&p.kind!=='milestone');
+        const min=Math.min(...data.map(p=>p.s)),max=Math.max(...data.map(p=>p.e));if(a<min||b>max)continue;
+        const block=document.createElement('button');block.type='button';block.className='segment';block.style.border='0';block.style.left=`${percent(a)}%`;block.style.width=`${percent(b)-percent(a)}%`;
+        if (!active.length) {block.style.background='repeating-linear-gradient(135deg,#edf1f6 0 4px,#ccd6e3 4px 5px)';block.style.color='#40546b';block.textContent='Pipeline adjustment gap';}
+        else {block.style.background=active.length===1?active[0].color:`linear-gradient(to bottom right,${active[0].color} 50%,${active[1].color} 50%)`;block.textContent=active.map(p=>p.name).join(' + ');}
+
+        const lines=tooltipLines(active,a,b,!active.length,data);
+        bindAddTooltip(block,lines);$('track').append(block);
+      }
+      for(let year=new Date(start).getUTCFullYear()-1;year<=new Date(end).getUTCFullYear();year++) {
+        const [a,b]=shutdown(year);if(b<=start||a>=end)continue;
+        const pause=document.createElement('div');pause.className='shutdown';pause.style.left=`${percent(Math.max(a,start))}%`;pause.style.width=`${percent(Math.min(b,end))-percent(Math.max(a,start))}%`;pause.title='Christmas shutdown';$('track').append(pause);
+      }
+
+      data.filter(p=>p.kind==='milestone').forEach(item=>{
+        if(item.s<start||item.s>end||item.id===data[preview.anchorIndex].id)return;
+        const mark=document.createElement('button');mark.type='button';mark.className='anchor-line anchor-point';mark.style.borderColor=item.color;mark.style.left=Math.min(100-100/axisWidth,percent(item.s))+'%';bindAddTooltip(mark,[item.name,format(item.s)]);$('track').append(mark);
+      });
+      if(planningAnchor>=start&&planningAnchor<=end){
+        const mark=document.createElement('button');mark.type='button';mark.className='anchor-line anchor-point';mark.style.left=Math.min(100-100/axisWidth,percent(planningAnchor))+'%';
+        bindAddTooltip(mark,[preview.anchorName,...anchorDetailLines(anchor,planningAnchor)]);$('track').append(mark);
+      }
+      data.forEach(item=>{const key=document.createElement('span'),swatch=document.createElement('i');swatch.style.background=item.color;key.append(swatch,document.createTextNode(item.name));$('legend').append(key);});
+      for (const text of ['Hatching: Christmas pause or inactive gap','◆ Milestone / fixed anchor']) {const key=document.createElement('span');key.textContent=text;$('legend').append(key);}
+      timelineViewport=geometry;scroller.scrollLeft=geometry.scrollLeft;
+    }
+
+    $('timeline-scroll').addEventListener('scroll',()=>{
+      hideAddTip();
+      if(!preview||!timelineViewport||timelineViewport.fit)return;
+      const visibleStart=timelineViewport.start+$('timeline-scroll').scrollLeft/timelineViewport.pixelsPerDay*dayMs;
+      timelineViewport.visibleStart=visibleStart;$('view-start').value=iso(Math.round(visibleStart/dayMs)*dayMs);
+    });
+    function resizeTimeline(){
+      if(!preview||!timelineViewport)return;
+      cancelAnimationFrame(timelineResizeFrame);
+      timelineResizeFrame=requestAnimationFrame(()=>{timelineResizeFrame=0;if(preview)drawTimeline({preservePosition:true});});
+    }
+    if(typeof ResizeObserver!=='undefined'){
+      const timelineResizeObserver=new ResizeObserver(()=>{
+        if(preview&&timelineViewport&&$('timeline-scroll').clientWidth>0&&Math.abs($('timeline-scroll').clientWidth-timelineViewport.viewportWidth)>1)resizeTimeline();
+      });
+      timelineResizeObserver.observe($('timeline-scroll'));
+    }else window.addEventListener('resize',resizeTimeline);
+
+    $('preview').addEventListener('click',review);
+    $('view-length').addEventListener('change',()=>drawTimeline());$('view-start').addEventListener('change',()=>drawTimeline());
+    let pendingAddition=null;
+    function cancelAddition(){pendingAddition=null;$('add-confirm-dialog').close();$('confirm').focus();}
+    $('confirm').addEventListener('click',()=>{
+      if(!preview||$('confirm').disabled)return;
+      pendingAddition=preview;$('add-confirm-dialog').showModal();$('cancel-add-confirm').focus();
+    });
+    $('cancel-add-confirm').addEventListener('click',cancelAddition);
+    $('close-add-confirm').addEventListener('click',cancelAddition);
+    $('add-confirm-dialog').addEventListener('cancel',event=>{event.preventDefault();cancelAddition();});
+    $('add-confirm-form').addEventListener('submit',event=>{
+      event.preventDefault();
+      if(!pendingAddition||pendingAddition!==preview||$('confirm').disabled){cancelAddition();$('feedback').textContent='The schedule has changed. Preview it again before adding.';return;}
+      try{
+        const anchor=preview.data[preview.anchorIndex];
+        const saved=window.LTPPDemo.addPlan({name:$('procurement-name').value.trim(),anchorName:anchor.name,anchor:preview.anchor,planningAnchor:preview.planningAnchor,anchorId:anchor.id,phases:preview.data});
+        pendingAddition=null;$('add-confirm-dialog').close();window.LTPPDemo.go('pipeline.html?notice=added&focus='+encodeURIComponent(saved.id));
+      }catch(error){cancelAddition();$('feedback').textContent=error.message;}
+
+    });
+    populateTemplates();resetRelationshipReview();renderRows();renderAnchor();
+    window.LTPPDemo.guard(()=>phases.length>0||!!$('procurement-name').value.trim()||!!$('anchor-date').value||
+      $('proc-item-dialog').open||$('proc-phase-dialog').open||$('row-settings-dialog').open);
+  </script>
+</body>
+</html>

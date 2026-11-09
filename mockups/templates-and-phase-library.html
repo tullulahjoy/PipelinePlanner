@@ -1,0 +1,897 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Templates and phase library · LTPP design study</title>
+  <style>
+    :root { font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif; color: #17283d; background: #f3f5f8; font-synthesis: none; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    body.modal-open { overflow: hidden; }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: default; opacity: .4; }
+    :focus-visible { outline: 3px solid #315ed4; outline-offset: 3px; }
+    [hidden] { display: none !important; }
+    header { display: flex; align-items: center; gap: 28px; padding: 15px 32px; background: #14283f; color: white; }
+    .brand { font-size: 19px; font-weight: 750; letter-spacing: .03em; }
+    header nav { display: flex; align-items: center; gap: 24px; }
+    header a, header button { color: #cbd7e6; text-decoration: none; background: none; border: 0; padding: 7px 0; font-size: 13px; }
+    header button { color: white; font-weight: 700; border-bottom: 2px solid #7ba0ff; }
+    header small { margin-left: auto; color: #cbd7e6; font-size: 11px; }
+    main { max-width: 1280px; padding: 32px 32px 48px; margin: auto; }
+    h1 { font-size: clamp(27px, 3.5vw, 35px); letter-spacing: -.035em; margin: 0 0 11px; }
+    .subtitle { margin: 0; color: #5c6e84; font-size: 14px; line-height: 1.65; }
+    .notice { margin: 20px 0 26px; background: #eaf0fa; border-left: 3px solid #315ed4; padding: 11px 15px; font-size: 12px; line-height: 1.7; color: #405a7c; }
+    .choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin: 28px 0; }
+    .choice { position: relative; display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 16px; align-items: center; padding: 24px; background: #fff; border: 1px solid #d9e2ee; border-radius: 9px; cursor: pointer; }
+    .choice:hover { border-color: #8aa8df; background: #fafcff; }
+    .choice:has(.choice-action[aria-pressed="true"]) { border-color: #315ed4; background: #edf3ff; box-shadow: inset 0 0 0 1px #315ed4; }
+    .choice:has(.choice-action:focus-visible) { outline: 3px solid #315ed4; outline-offset: 3px; }
+    .choice-icon { width: 52px; height: 52px; border-radius: 10px; display: grid; place-items: center; background: #eaf1ff; color: #315ed4; flex-shrink: 0; }
+    .choice-icon.purple { background: #f0ebfa; color: #7658a7; }
+    .choice-icon svg { width: 32px; height: 32px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linejoin: round; }
+    .choice h2 { margin: 0 0 7px; font-size: 19px; letter-spacing: -.02em; }
+    .choice p { margin: 0; color: #5b6f87; font-size: 13px; line-height: 1.7; }
+    .choice-copy { flex: 1; }
+    .choice small { display: block; margin-top: 8px; color: #718098; font-size: 11px; }
+    .choice-action { grid-column: 2; justify-self: start; border: 0; padding: 5px 0; color: #2454c5; background: none; font-size: 13px; font-weight: 700; white-space: nowrap; }
+    .choice-action::after { content: ''; position: absolute; inset: 0; border-radius: 9px; }
+    .choice-action:focus-visible { outline: none; }
+    .choice-action span { margin-left: 14px; font-size: 21px; }
+    .section-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 22px; }
+    .section-heading h2 { margin: 0 0 7px; font-size: 23px; letter-spacing: -.02em; }
+    .section-heading p { margin: 0; color: #5c6e84; font-size: 13px; line-height: 1.7; }
+    .btn { border: 1px solid #bbc8d9; background: white; color: #294363; border-radius: 5px; padding: 9px 14px; min-height: 39px; font-size: 12px; font-weight: 650; }
+    .btn:hover:not(:disabled) { background: #edf2f9; }
+    .btn.primary { background: #2454c5; border-color: #2454c5; color: white; }
+    .btn.primary:hover:not(:disabled) { background: #193f9c; }
+    .btn.small { padding: 6px 11px; min-height: 32px; }
+    .card { border: 1px solid #dce3ed; border-radius: 8px; background: white; overflow: hidden; }
+    .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 15px; padding: 16px 20px; border-bottom: 1px solid #e2e8f0; }
+    .toolbar input { width: min(100%, 360px); }
+    .muted { font-size: 12px; color: #62758d; line-height: 1.6; }
+    input, select, textarea { border: 1px solid #b9c5d5; border-radius: 5px; padding: 9px 10px; background: white; color: #20354e; min-width: 0; }
+    input, select { min-height: 39px; }
+    textarea { resize: vertical; min-height: 75px; }
+    .scroll { overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; font-size: 12px; }
+    th { text-align: left; padding: 12px 16px; background: #f7f9fc; font-size: 11px; font-weight: 700; color: #52667f; border-bottom: 1px solid #dfe6ef; white-space: nowrap; }
+    td { padding: 15px 16px; border-bottom: 1px solid #e6ecf3; vertical-align: middle; line-height: 1.6; }
+    .library-table { min-width: 760px; }
+    .type-name { display: inline-flex; align-items: center; gap: 11px; font-weight: 650; }
+    .swatch { width: 13px; height: 13px; display: inline-block; border-radius: 50%; flex-shrink: 0; }
+    .pill { display: inline-block; font-size: 10px; padding: 3px 7px; border-radius: 4px; background: #eef2f8; color: #4e6380; margin: 2px 3px 2px 0; }
+    .pill.warning { background: #fff4d9; color: #8b5c06; }
+    .pill.critical { background: #fce9ed; color: #a92e45; }
+    .card-footer { padding: 12px 20px; font-size: 11px; line-height: 1.65; color: #64778f; background: #fafbfd; }
+    .library-note { margin: 15px 0 0; font-size: 12px; line-height: 1.7; color: #63748b; }
+    .field { display: flex; flex-direction: column; gap: 7px; font-size: 12px; font-weight: 650; }
+    .help { font-size: 11px; font-weight: 400; color: #60748d; line-height: 1.65; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .editor-body { padding: 22px; }
+    .editor-heading { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 20px; }
+    h3 { font-size: 18px; margin: 0; letter-spacing: -.01em; }
+    .unsaved { font-size: 11px; border: 1px solid #e4c990; background: #fff7e6; color: #8b610f; border-radius: 20px; padding: 4px 9px; }
+    .builder-title { font-size: 14px; margin: 25px 0 12px; }
+    .sequence { min-width: 1050px; table-layout: fixed; }
+    .sequence td { padding: 9px 12px; }
+    .sequence input, .sequence select { padding: 7px 8px; min-height: 34px; font-size: 12px; }
+    .sequence input { width: 100%; }
+    .sequence .label-cell { width: 350px; min-width: 0; }
+    .sequence .weeks-cell { width: 80px; }
+    .sequence .relation-cell { min-width: 180px; }
+    .sequence .relation { display: flex; gap: 6px; }
+    .sequence .relation select { width: 112px; }
+    .sequence .relation input { width: 54px; }
+    .sequence .relation-cell.needs-review { background: #fff8e7; }
+    .sequence .relation-cell.needs-review select, .sequence .relation-cell.needs-review input:not(:disabled) { border-color: #b78320; }
+    .sequence .relation-cell.relationship-error { background: #fff1f3; }
+    .sequence .relation-cell.relationship-error select, .sequence .relation-cell.relationship-error input:not(:disabled) { border-color: #b63d53; }
+    .relationship-context { margin-top: 9px; font-size: 10px; line-height: 1.65; color: #62758d; overflow-wrap: break-word; }
+    .relationship-context.check { padding: 10px; border-left: 3px solid #b78320; background: #fffdf5; color: #72501b; }
+    .relationship-context.error { border-left-color: #b63d53; background: #fff9fa; color: #9b3046; }
+    .relationship-context strong, .relationship-context span { display: block; }
+    .relationship-context strong { font-size: 11px; margin-bottom: 5px; }
+    .relationship-context p { margin: 6px 0; }
+    .relationship-context .btn { width: 100%; white-space: normal; margin-top: 5px; padding: 6px; font-size: 10px; }
+    .relationship-review-summary { display: flex; justify-content: space-between; align-items: center; gap: 15px; padding: 12px 14px; border: 1px solid #e2c58c; border-left: 3px solid #b78320; border-radius: 6px; background: #fff8e7; margin-bottom: 14px; font-size: 12px; line-height: 1.65; }
+    .relationship-review-summary strong { display: block; }
+    .sequence small { display: block; font-size: 10px; color: #6b7e96; margin-top: 4px; white-space: normal; overflow-wrap: break-word; }
+    .order-buttons { display: flex; gap: 8px; align-items: center; justify-content: flex-end; }
+    .order-buttons button { background: #f6f8fb; border: 1px solid #d4dfec; color: #4f6581; border-radius: 4px; padding: 5px 7px; font-size: 13px; }
+    .order-buttons button.remove { color: #9b4254; margin-left: 4px; }
+    .order-buttons .drag-handle { padding: 5px 9px; min-width: 36px; min-height: 36px; font-size: 20px; line-height: 1; cursor: grab; touch-action: none; user-select: none; }
+    .order-buttons .drag-handle[aria-pressed="true"] { cursor: grabbing; color: #2454c5; background: #e6efff; border-color: #315ed4; }
+    .sequence tr.dragging { opacity: .45; background: #edf3ff; }
+    .sequence tr.drop-before td { box-shadow: inset 0 3px 0 #315ed4; }
+    .sequence tr.drop-after td { box-shadow: inset 0 -3px 0 #315ed4; }
+    .reorder-ghost { position: fixed; z-index: 30; pointer-events: none; max-width: min(380px, calc(100vw - 24px)); padding: 12px 16px; background: #14283f; color: white; border: 1px solid #6a92e6; border-radius: 6px; box-shadow: 0 8px 24px #14283f33; font-size: 12px; }
+    .reorder-help { margin: 12px 0 0; }
+    #reorder-status:empty { display: none; }
+    .sequence .shared-rule-description { margin: 0 0 7px; font-size: 11px; color: #64748b; line-height: 1.6; overflow-wrap: break-word; }
+    .sequence .shared-rule-description:last-child { margin-bottom: 0; }
+    .add-schedule { padding: 18px; border: 1px solid #dae3ef; border-radius: 7px; background: #f8fafc; margin: 22px 0 15px; }
+    .add-schedule h4 { margin: 0 0 7px; font-size: 15px; }
+    .add-schedule p { margin: 0; font-size: 12px; color: #62758d; line-height: 1.65; }
+    .add-items { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 14px 0 0; }
+    .schedule-item-form { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+    .schedule-item-fields { display: grid; gap: 18px; }
+    .schedule-item-note { margin: 0; background: #f2f6fd; border: 1px solid #d8e3f3; border-radius: 6px; padding: 12px 14px; font-size: 12px; line-height: 1.7; color: #536b8b; }
+    .anchor-box { background: #f7f9fc; border: 1px solid #dce5f0; border-radius: 6px; padding: 18px; margin-top: 23px; }
+    .anchor-box h4 { font-size: 14px; margin: 0 0 8px; }
+    .anchor-box p { margin: 0 0 15px; color: #5c718b; font-size: 12px; line-height: 1.7; }
+    .editor-actions { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin-top: 23px; padding-top: 18px; border-top: 1px solid #e1e7f0; }
+    .editor-actions div { display: flex; gap: 10px; }
+    .status { min-height: 20px; font-size: 12px; line-height: 1.7; color: #2454a0; margin-top: 15px; }
+    .status.error { color: #a42c43; }
+    dialog { width: min(800px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); padding: 0; overflow: hidden; border: 1px solid #cbd8e8; border-radius: 10px; background: white; color: #17283d; box-shadow: 0 20px 70px #14283f40; }
+    dialog::backdrop { background: #14283f80; }
+    dialog[open] { display: flex; flex-direction: column; }
+    .modal-header { padding: 22px; display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; flex-shrink: 0; }
+    .modal-header h2 { margin: 0 0 6px; font-size: 21px; }
+    .modal-header p { margin: 0; color: #61758e; font-size: 12px; line-height: 1.65; }
+    .close { background: #edf2f8; color: #526983; border: 0; border-radius: 5px; padding: 5px 9px; font-size: 23px; }
+    .phase-form { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow: hidden; }
+    .modal-content { padding: 0 22px 22px; overflow-y: auto; min-height: 0; flex: 1 1 auto; overscroll-behavior: contain; scroll-padding-block: 16px; }
+    .modal-footer { padding: 16px 22px; border-top: 1px solid #e0e7f0; background: #f8fafc; display: flex; gap: 10px; justify-content: flex-end; flex-shrink: 0; }
+    input[type="color"] { width: 100%; height: 40px; padding: 4px; }
+    .phase-section-title { display: block; font-size: 15px; font-weight: 700; margin: 0 0 14px; }
+    .phase-basic-row { display: grid; grid-template-columns: minmax(0, 1fr) 180px 180px; gap: 16px; align-items: end; }
+    .phase-basic-row input { width: 100%; height: 40px; min-height: 40px; }
+    .phase-basic-row .field { min-width: 0; }
+    .rule-box { margin-top: 23px; padding-top: 20px; border-top: 1px solid #dfe7f0; }
+    .rule-box h3 { font-size: 15px; margin: 0 0 8px; }
+    .rule-box p { margin: 0 0 12px; font-size: 12px; line-height: 1.7; color: #60738a; }
+    .rule-list { list-style: none; padding: 0; margin: 12px 0; }
+    .rule-list li { display: block; border: 1px solid #d6e0ed; border-radius: 7px; background: #fafbfd; padding: 18px; margin-bottom: 16px; font-size: 12px; line-height: 1.65; }
+    .rule-list li.invalid { border: 2px solid #b3334b; background: #fff6f7; }
+    .rule-row-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .rule-row-heading strong { font-size: 14px; }
+    .rule-row-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 14px; align-items: end; }
+    .rule-row-grid input, .rule-row-grid select { width: 100%; font-size: 12px; }
+    .rule-reason { margin-top: 16px; }
+    .rule-reason textarea { width: 100%; font-size: 12px; }
+    .rule-scope { margin: 12px 0 0 !important; font-size: 11px !important; }
+    .rules-empty { border: 1px solid #b9ccef; border-left: 4px solid #315ed4; border-radius: 6px; background: #edf3ff; padding: 17px; margin-bottom: 16px; }
+    .rules-empty strong { display: block; font-size: 15px; color: #203f73; margin-bottom: 5px; }
+    .rules-empty span { font-size: 12px; line-height: 1.7; color: #516a8e; }
+    #add-rule { padding: 12px 18px; font-size: 14px; min-height: 44px; }
+    .type-rule-details { margin-top: 6px; font-size: 11px; }
+    .type-rule-details p { max-width: 330px; margin: 6px 0 0; font-size: 11px; color: #64748b; }
+    .rule-note { background: #eef3fc; padding: 12px 14px; border-left: 3px solid #7396d5; font-size: 11px; color: #526b8c; line-height: 1.7; margin-top: 18px; }
+    .review-title { font-size: 17px; margin: 0 0 10px; }
+    .review-intro { font-size: 12px; line-height: 1.75; color: #556d88; margin: 0 0 16px; }
+    .source-changes { margin: 0 0 18px; padding: 13px 16px 13px 32px; background: #f2f6fd; border: 1px solid #d5e1f3; border-radius: 6px; font-size: 12px; line-height: 1.8; }
+    .template-impact-table { min-width: 610px; }
+    .template-impact-table td { padding: 13px 12px; vertical-align: top; }
+    .template-impact-table th { padding: 11px 12px; }
+    .template-impact-table td:first-child { width: 45px; }
+    .template-impact-table input[type="checkbox"] { min-height: auto; width: 17px; height: 17px; accent-color: #2454c5; }
+    .disabled-update-target { display:inline-flex; align-items:center; justify-content:center; width:25px; height:25px; border-radius:4px; cursor:help; }
+    .disabled-update-target input[type="checkbox"] { margin:0; pointer-events:none; }
+    .disabled-update-target:focus-visible { outline:3px solid #315ed4; outline-offset:2px; }
+    .disabled-update-tooltip { position:fixed; z-index:50; width:340px; max-width:calc(100vw - 24px); max-height:calc(100dvh - 24px); overflow:auto; box-sizing:border-box; padding:11px 13px; border-radius:6px; background:#14283f; color:#fff; box-shadow:0 6px 24px #14283f33; font-size:12px; line-height:1.65; overflow-wrap:anywhere; }
+    .template-impact-table label { font-weight: 650; }
+    .template-impact-table small { display: block; font-size: 10px; color: #667b94; line-height: 1.7; margin-top: 4px; }
+    .occurrence-impact { margin-bottom: 11px; }
+    .occurrence-impact:last-child { margin-bottom: 0; }
+    .occurrence-impact strong { display: block; font-size: 11px; margin-bottom: 3px; }
+    .occurrence-impact ul { padding-left: 16px; margin: 0; font-size: 11px; line-height: 1.8; }
+    .impact-keep { color: #63758e; }
+    .impact-update { color: #24539c; }
+    .impact-blocked { margin-top: 8px; padding: 8px 10px; background: #fff3df; border-left: 3px solid #b47b15; color: #7e5919; font-size: 11px; line-height: 1.7; }
+    .review-footer { justify-content: space-between; flex-wrap: wrap; }
+    .review-footer > div { display: flex; gap: 10px; flex-wrap: wrap; }
+    footer { margin-top: 36px; border-top: 1px solid #dce3ed; padding-top: 17px; color: #65778f; font-size: 11px; line-height: 1.7; }
+    footer a { color: #2454c5; }
+    @media (max-width: 760px) { header { padding: 14px 16px; gap: 20px; } header nav { gap: 16px; } header small { display: none; } main { padding: 25px 16px 35px; } .choices { grid-template-columns: 1fr; } .choice { padding: 22px 18px; gap: 17px; } .choice-icon { width: 48px; height: 48px; } .choice-copy { min-width: 0; } .grid, .rule-row-grid, .phase-basic-row { grid-template-columns: 1fr; } .section-heading, .editor-actions { flex-wrap: wrap; } .editor-body { padding: 16px; } .toolbar { flex-wrap: wrap; } }
+
+    /* Native search and radio controls keep the Library chooser dependency-free. */
+    .schedule-library-list { border:0; padding:0; margin:16px 0 0; min-width:0; }
+    .schedule-library-list legend { font-size:13px; font-weight:650; padding:0; }
+    #schedule-results-count { margin:5px 0 9px; font-size:11px; }
+    .schedule-library-results { max-height:210px; overflow-y:auto; overscroll-behavior:contain; border:1px solid #d6e0ed; border-radius:6px; }
+    .schedule-library-results:empty { display:none; }
+    .schedule-library-choice { display:flex; align-items:center; gap:10px; padding:11px 13px; border-bottom:1px solid #e2e8f0; cursor:pointer; font-size:13px; }
+    .schedule-library-choice:last-child { border-bottom:0; }
+    .schedule-library-choice:has(input:checked) { background:#edf3ff; box-shadow:inset 3px 0 #315ed4; }
+    .schedule-library-choice:focus-within { outline:2px solid #315ed4; outline-offset:-2px; }
+    .schedule-library-choice input { width:16px; height:16px; min-height:0; margin:0; accent-color:#315ed4; flex-shrink:0; }
+    .schedule-library-choice .swatch { width:11px; height:11px; flex-shrink:0; border-radius:3px; }
+    .schedule-library-choice strong { font-size:13px; font-weight:600; overflow-wrap:anywhere; }
+    .schedule-library-choice small { margin-left:auto; padding-left:10px; color:#63758e; white-space:nowrap; font-size:12px; }
+    .schedule-library-empty { background:#f3f6fa; border:1px dashed #c6d2e1; border-radius:6px; padding:16px; font-size:13px; line-height:1.6; color:#526780; }
+    .schedule-create-option { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; padding:13px 0; margin-top:8px; }
+    .schedule-create-option p { margin:0; color:#5f738c; font-size:12px; }
+    .schedule-duration-help { margin:0; font-size:12px; line-height:1.65; }
+    #schedule-selected-fields { border-top:1px solid #dce5ef; padding-top:18px; }
+    .schedule-custom-fields { display:grid; grid-template-columns:minmax(0,1fr) 185px; gap:16px; align-items:end; margin-bottom:14px; }
+    .schedule-custom-fields:has(#schedule-weeks-field[hidden]) { grid-template-columns:1fr; }
+    .schedule-custom-fields input { width:100%; }
+    .schedule-rule-preview { background:#f3f5f8; padding:12px 14px; border-radius:6px; margin-top:12px; }
+    .schedule-rule-preview h3 { margin:0 0 7px; font-size:13px; }
+    .schedule-rule-preview p { margin:5px 0 0; color:#5b6f87; font-size:12px; line-height:1.6; }
+    @media(max-width:550px) { .schedule-custom-fields { grid-template-columns:1fr; } .schedule-create-option { align-items:flex-start; flex-direction:column; } }
+
+  </style>
+  <link rel="stylesheet" href="demo-navigation.css">
+</head>
+<body>
+  <header class="app-header"><a class="app-brand" href="pipeline.html"><span>LTPP</span> <span class="app-brand-description">Long-term pipeline plan</span></a><nav class="app-nav" aria-label="Main navigation"><a href="pipeline.html">Pipeline</a><button id="nav-library" type="button" aria-current="page">Library</button><a href="versions-and-baselines.html">Saved Pipelines</a><a href="how-it-works.html">How it works</a></nav><small>Local prototype · Fictional data</small></header>
+  <main>
+    <h1 id="page-title" tabindex="-1">Templates and phase library</h1>
+    <p class="subtitle" id="page-subtitle" role="status" aria-live="polite">Choose what you want to manage. The selected section will appear below.</p>
+    <div class="notice">Local prototype: saved phases, shared overlap rules and templates are available throughout these mockups in this browser. Existing procurement dates are not changed by Library edits.</div>
+
+    <section id="overview" aria-label="Choose a library section">
+      <div class="choices">
+        <article class="choice"><div class="choice-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="m16 3 12 7-12 7L4 10Z M4 16l12 7 12-7 M4 22l12 7 12-7" /></svg></div><div class="choice-copy"><h2>Phases</h2><p>Create reusable phases with default durations, colours and overlap rules.</p><small id="overview-phase-count"></small></div><button class="choice-action" id="choose-types" type="button" aria-pressed="false" aria-controls="types-section">Manage phases <span aria-hidden="true">→</span></button></article>
+        <article class="choice"><div class="choice-icon purple" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M8 3h12l6 6v20H8Z M20 3v7h6 M12 15h10 M12 20h10 M12 25h7" /></svg></div><div class="choice-copy"><h2>Procurement templates</h2><p>Arrange phases and milestones into reusable procurement schedules.</p><small id="overview-template-count"></small></div><button class="choice-action" id="choose-templates" type="button" aria-pressed="false" aria-controls="templates-section">Manage templates <span aria-hidden="true">→</span></button></article>
+      </div>
+    </section>
+
+    <div id="workspace" hidden>
+      <section id="types-section" aria-labelledby="types-title" hidden>
+        <div class="section-heading"><div><h2 id="types-title">Phases</h2><p>Reusable activities, default durations and rules for overlap across procurements.</p></div><button class="btn primary" type="button" id="create-phase">+ Create phase</button></div>
+        <div class="card"><div class="toolbar"><input type="search" id="phase-search" aria-label="Search phases" placeholder="Search phases…" /><span class="muted">Defaults for future additions</span></div><div class="scroll"><table class="library-table"><thead><tr><th scope="col">Phase</th><th scope="col">Default duration</th><th scope="col">Shared overlap rules</th><th scope="col">Action</th></tr></thead><tbody id="type-rows"></tbody></table></div><div class="card-footer" id="type-count"></div></div>
+        <p class="library-note">The examples include a Warning rule for Evaluation against Evaluation and a Critical clash rule for Moderation against Moderation. These are explicit sample definitions, not restrictions inferred from names. Editing a phase does not silently update existing template copies or procurements.</p>
+      </section>
+
+      <section id="templates-section" aria-labelledby="templates-title" hidden>
+        <div class="section-heading"><div><h2 id="templates-title">Procurement templates</h2><p>Select phases, arrange their relationships and choose the anchor position. Actual dates belong to individual procurements.</p></div><button class="btn primary" type="button" id="create-template">+ Create template</button></div>
+        <div class="card" id="template-list"><div class="scroll"><table class="library-table"><thead><tr><th scope="col">Template name</th><th scope="col">Structure</th><th scope="col">Usual anchor position</th><th scope="col">Action</th></tr></thead><tbody id="template-rows"></tbody></table></div><div class="card-footer">Templates hold reusable structure and assumptions. No procurement dates or clash overrides are stored here.</div></div>
+
+        <div class="card" id="template-editor" hidden>
+          <div class="editor-body">
+            <div class="editor-heading"><h3 id="template-editor-title" tabindex="-1">Create template</h3><span class="unsaved" id="template-dirty" hidden>Unsaved changes</span></div>
+            <div class="grid"><label class="field">Template name<input id="template-name" maxlength="120" required placeholder="For example: Service transfer" /></label><label class="field">When should this template be used?<input id="template-description" maxlength="220" placeholder="A short description for other editors" /></label></div>
+            <h4 class="builder-title">Phase sequence</h4>
+            <div class="relationship-review-summary" id="relationship-review-summary" hidden><div><strong id="relationship-review-count" role="status" aria-live="polite"></strong><span>Review the highlighted controls. Change the setting or confirm that the relationship should be kept.</span></div><button class="btn small" type="button" id="review-first-relationship">Review first check</button></div>
+            <div class="scroll" id="sequence-scroll"><table class="sequence"><colgroup><col style="width:44px" /><col style="width:350px" /><col style="width:80px" /><col style="width:190px" /><col /><col style="width:110px" /></colgroup><thead><tr><th scope="col">#</th><th scope="col">Phase / milestone name</th><th scope="col">Weeks</th><th scope="col">Relationship to previous</th><th scope="col">Shared rules</th><th scope="col">Reorder / remove</th></tr></thead><tbody id="sequence-rows"></tbody></table></div>
+            <p class="help reorder-help" id="reorder-instructions">Hold the grip button at the end of a row and drag to a new position. Keyboard: focus the grip, press Space or Enter to pick up, use ↑ / ↓ to choose a position, then Space or Enter to drop. Escape cancels. Overlaps or gaps affected by a move are highlighted for review.</p>
+            <p class="status" id="reorder-status" role="status" aria-live="polite"></p>
+            <section class="add-schedule" aria-labelledby="add-schedule-title"><h4 id="add-schedule-title">Add Phase to Procurement Template</h4><p>Browse the Library or create a phase through Add phase. Items are added at the end; use their grips to move them afterwards.</p><div class="add-items"><button class="btn primary" id="add-existing" type="button">+ Add phase</button><button class="btn" id="add-milestone" type="button">+ Add milestone</button></div></section>
+            <p class="help">Add a phase more than once if needed. Default duration and colour are copied when a phase is added; changing them here does not change the phase library. Overlap rules always come from the current shared library rules. Intentional overlaps here are separate from restrictions across procurements.</p>
+            <div class="anchor-box"><h4>Usual anchor position</h4><p>Choose the milestone whose date the procurement will be planned around. The user enters the actual date when creating the procurement; its planning position is Monday of that date’s week. This template contains no dates.</p><div class="grid"><label class="field">Anchor milestone<select id="template-anchor"></select></label><div class="field"><span>Need a different milestone?</span><button class="btn" type="button" id="template-add-anchor">+ Add anchor milestone</button></div></div><p id="template-anchor-summary" style="margin:12px 0 0"></p></div>
+            <div class="status" id="template-status" role="status" aria-live="polite"></div>
+            <div class="editor-actions"><span class="muted">Switching between the cards above retains this draft.<br />Cancel editing discards the template draft.</span><div><button class="btn" type="button" id="cancel-template">Cancel editing</button><button class="btn primary" type="button" id="save-template">Save template (demo)</button></div></div>
+          </div>
+        </div>
+      </section>
+    </div>
+    <p class="status" id="page-status" role="status" aria-live="polite"></p>
+    <footer>Local prototype · Fictional data saved in this browser · <a href="pipeline.html">Return to Pipeline</a></footer>
+  </main>
+
+  <dialog id="schedule-item-dialog" aria-labelledby="schedule-item-title" aria-describedby="schedule-item-description">
+    <div class="modal-header"><div><h2 id="schedule-item-title">Add phase</h2><p id="schedule-item-description">Browse or search the Library, then select a phase to review its details.</p></div><button class="close" id="close-schedule-item" type="button" aria-label="Cancel adding item and close">×</button></div>
+    <form class="schedule-item-form" id="schedule-item-form"><div class="modal-content schedule-item-fields">
+      <div id="schedule-library-browser">
+        <label class="field">Search phases in the Library<input id="schedule-search" type="search" placeholder="Search by phase name" autocomplete="off" /></label>
+        <fieldset class="schedule-library-list"><legend>Phases in the Library</legend><p class="help" id="schedule-results-count" role="status" aria-live="polite"></p><div class="schedule-library-results" id="schedule-library-results"></div><p class="schedule-library-empty" id="schedule-library-empty" hidden></p></fieldset>
+        <div class="schedule-create-option"><p id="schedule-create-help">If nothing here meets your need, create a new phase.</p><button class="btn" id="create-phase-in-template" type="button">+ Create a new phase</button></div>
+        <p class="help schedule-duration-help">You can change a phase’s duration for this template without creating a new Library phase.</p>
+      </div>
+      <input id="schedule-source" type="hidden" />
+      <div id="schedule-selected-fields" hidden>
+        <div class="schedule-custom-fields"><label class="field"><span id="schedule-name-label">Name in this template</span><input id="schedule-name" maxlength="150" required /></label><label class="field" id="schedule-weeks-field">Duration in whole weeks<input id="schedule-weeks" type="number" min="1" max="1000" step="1" required /></label></div>
+        <p class="schedule-item-note" id="schedule-source-note"></p>
+        <div class="schedule-rule-preview" id="schedule-rule-preview"><h3>Overlaps to flag across the pipeline</h3><div id="schedule-rule-summary"></div></div>
+      </div>
+      <label class="field" id="schedule-position-field" hidden>Position in the schedule<select id="schedule-position"></select></label>
+      <p class="help" id="schedule-placement-help">The item will be added at the end of the schedule. You can then move it with its row grip and review its relationship to the preceding activity.</p>
+      <p class="status" id="schedule-item-status" role="status" aria-live="polite"></p>
+    </div><div class="modal-footer"><button class="btn" id="cancel-schedule-item" type="button">Cancel</button><button class="btn primary" id="save-schedule-item" type="submit" disabled>Add phase to template</button></div></form>
+  </dialog>
+  <div class="reorder-ghost" id="reorder-ghost" hidden></div>
+
+  <dialog id="phase-dialog" aria-labelledby="phase-dialog-title" aria-describedby="phase-dialog-description">
+    <div class="modal-header"><div><h2 id="phase-dialog-title" tabindex="-1">Create phase</h2><p id="phase-dialog-description">Define a reusable activity for future templates and procurements.</p></div><button class="close" id="close-phase" type="button" aria-label="Cancel phase changes and close">×</button></div>
+    <form class="phase-form" id="phase-form">
+      <div class="modal-content" id="phase-modal-content">
+        <div id="phase-edit-fields">
+        <section aria-labelledby="phase-details-title">
+          <h3 class="phase-section-title" id="phase-details-title">Phase details</h3>
+          <div class="phase-basic-row">
+            <label class="field">Phase name<input id="phase-name" maxlength="100" required /></label>
+            <label class="field">Default duration (weeks)<input id="phase-weeks" type="number" min="1" max="1000" step="1" required /></label>
+            <label class="field phase-colour">Phase colour<input id="phase-color" type="color" value="#315ed4" /></label>
+          </div>
+          <p class="help">Colour changes apply wherever this Library phase is used when you save.</p>
+        </section>
+        <div class="rule-box"><h3>Overlaps to flag across the pipeline</h3><p>Identify if any phase(s) in other procurements could clash problematically with this one, including another occurrence of the same phase. Select a 'Warning' for undesirable but manageable overlap, or a 'Critical clash' for unacceptable overlap.</p><p>Where a rule affects two phases, the rule will appear automatically under both phases. Editing or removing it updates both instances and refreshes warnings and critical clashes across the pipeline.</p>
+          <div class="rules-empty" id="rules-empty"><strong>No overlap rules defined</strong><span>This phase has no restrictions on overlapping activities in other procurements.</span></div><ul class="rule-list" id="phase-rules"></ul>
+          <button class="btn primary" type="button" id="add-rule">+ Add overlap rule</button><div class="status" id="rule-status" role="status"></div>
+        </div>
+        <div class="rule-note">Create or save the phase to save every rule row together. Incomplete rows must be completed or removed. Cancel or Escape discards all edits in this dialog.</div><div class="status" id="phase-status" role="status" aria-live="polite"></div>
+        </div>
+        <section id="phase-update-review" aria-labelledby="phase-update-title" hidden>
+          <h3 class="review-title" id="phase-update-title" tabindex="-1">Update existing procurement templates?</h3>
+          <p class="review-intro">Nothing has been saved yet. Review how the edited phase would affect each template, then choose which templates to update. Template-specific overrides are retained.</p>
+          <ul class="source-changes" id="phase-source-changes"></ul>
+          <div class="scroll"><table class="template-impact-table"><thead><tr><th scope="col">Update</th><th scope="col">Template</th><th scope="col">Current values and proposed results</th></tr></thead><tbody id="template-impact-rows"></tbody></table></div>
+          <p class="help" id="template-selection-count" role="status" aria-live="polite"></p>
+          <div id="open-draft-notice"></div>
+          <div class="rule-note">Only selected templates' inherited names and durations are updated. Name and duration overrides, phase order, intentional overlaps, gaps and anchor positions are preserved. Existing procurements are not rescheduled.<br />Colour and overlap-rule changes apply throughout the Library, templates and pipeline when saved, independently of this choice. No scheduled dates change.</div>
+        </section>
+      </div>
+      <div class="modal-footer" id="phase-edit-actions"><button class="btn" type="button" id="cancel-phase">Cancel</button><button class="btn primary" type="submit" id="save-phase">Create phase (demo)</button></div>
+      <div class="modal-footer review-footer" id="phase-review-actions" hidden><button class="btn" type="button" id="back-phase-edit">← Back to editing</button><div><button class="btn" type="button" id="save-library-only">Save to library only</button><button class="btn primary" type="button" id="save-update-templates" disabled>Save and update selected templates</button></div></div>
+    </form>
+    <div id="template-update-tooltip" class="disabled-update-tooltip" role="tooltip" hidden></div>
+  </dialog>
+
+  <script src="demo-data.js"></script>
+  <script>
+    const $=id=>document.getElementById(id);
+    const clone=value=>JSON.parse(JSON.stringify(value));
+    const savedLibrary=window.LTPPDemo.library();
+    let types=savedLibrary.types,sharedRules=savedLibrary.sharedRules,templates=savedLibrary.templates;
+    let nextType=window.LTPPDemo.counter(types,'custom-'),nextItem=window.LTPPDemo.counter(templates.flatMap(t=>t.items),'item-'),
+      nextTemplate=window.LTPPDemo.counter(templates,'template-'),nextRule=window.LTPPDemo.counter(sharedRules,'library-draft-');
+    const typeName=id=>types.find(t=>t.id===id)?.name||'Unknown phase';
+    function rulesForType(type){
+      return sharedRules.flatMap(rule=>{
+        const common={id:rule.id,sharedId:rule.id,severity:rule.severity,reason:rule.reason||''};
+        if(rule.sourceId===type.id)return [{...common,kind:rule.kind,target:rule.target}];
+        if(rule.kind==='type'&&rule.target===type.id)return [{...common,kind:'type',target:rule.sourceId}];
+        return [];
+      });
+    }
+    function refreshSharedRuleViews(){types.forEach(type=>type.rules=rulesForType(type));}
+    refreshSharedRuleViews();
+    function occurrence(typeId){const source=types.find(t=>t.id===typeId);return {id:`item-${++nextItem}`,kind:'phase',typeId,label:source.name,weeks:source.weeks,libraryDefaultWeeks:source.weeks,librarySourceName:source.name,color:source.color,libraryDefaultColor:source.color,relation:'sequence',amount:0};}
+    function milestone(label){return {id:`item-${++nextItem}`,kind:'milestone',typeId:'',label,weeks:0,color:'#536ea1',rules:[],relation:'sequence',amount:0};}
+    function persistLibrary(nextTypes=types,nextRules=sharedRules,nextTemplates=templates){
+      return window.LTPPDemo.saveLibrary({types:nextTypes,sharedRules:nextRules,templates:nextTemplates});
+    }
+    let currentView='overview',templateDraft=null,phaseDraft=null,phaseContext='library',phaseTrigger=null,templateDirty=false,pendingPhaseSave=null;
+    let scheduleItemIsAnchor=false,scheduleItemMode='phase',scheduleItemTrigger=null,dragState=null,dragAnimation=0;
+    let reviewedRelationships=new Map(),relationshipChecks=new Map();
+    function text(tag,value,className=''){const node=document.createElement(tag);node.textContent=value;node.className=className;return node;}
+    function button(label,handler,className='btn small'){const node=text('button',label,className);node.type='button';node.addEventListener('click',handler);return node;}
+    function status(id,message,error=false){$(id).textContent=message;$(id).className=`status${error?' error':''}`;}
+    function counts(){$('overview-phase-count').textContent=`${types.length} phases in your demo library`;$('overview-template-count').textContent=`${templates.length} reusable templates in your demo library`;}
+    function show(view,focus=true){
+      currentView=view;$('workspace').hidden=view==='overview';
+      $('types-section').hidden=view!=='types';$('templates-section').hidden=view!=='templates';
+      $('choose-types').setAttribute('aria-pressed',String(view==='types'));$('choose-templates').setAttribute('aria-pressed',String(view==='templates'));
+      $('page-subtitle').textContent=view==='overview'?'Choose what you want to manage. The selected section will appear below.':`${view==='types'?'Phases':'Procurement templates'} shown below. Select the other card to switch sections.`;
+      counts();if(view==='types')renderTypes();if(view==='templates'){renderTemplates();if(templateDraft)renderTemplateEditor();}
+      if(focus)$('page-title').focus();
+    }
+    $('choose-types').addEventListener('click',()=>show('types',false));$('choose-templates').addEventListener('click',()=>show('templates',false));
+    $('nav-library').addEventListener('click',()=>show('overview'));
+    function describeRule(rule,selfName,includeReason=true){const target=rule.kind==='same'?`${selfName} phases`:`${typeName(rule.target)} phases`;return `${rule.severity==='critical'?'Critical clash':'Warning'} trigger: overlap with ${target} in other procurements.${includeReason&&rule.reason?` Reason: ${rule.reason}`:''}`;}
+    function rulePills(target,rules){if(!rules.length){target.append(text('span','No rules','muted'));return;}const warnings=rules.filter(rule=>rule.severity==='warning').length,critical=rules.length-warnings;if(warnings)target.append(text('span',`${warnings} Warning${warnings===1?'':'s'}`,'pill warning'));if(critical)target.append(text('span',`${critical} Critical clash${critical===1?'':'es'}`,'pill critical'));}
+    function renderTypes(){
+      $('type-rows').replaceChildren();const search=$('phase-search').value.trim().toLowerCase();const visible=types.filter(type=>type.name.toLowerCase().includes(search));
+      visible.forEach(type=>{const row=document.createElement('tr');const name=document.createElement('td'),label=document.createElement('span');label.className='type-name';const swatch=document.createElement('i');swatch.className='swatch';swatch.style.background=type.color;label.append(swatch,document.createTextNode(type.name));name.append(label);row.append(name,text('td',`${type.weeks} weeks`));const rules=document.createElement('td');rulePills(rules,type.rules);if(type.rules.length){const details=document.createElement('div');details.className='type-rule-details';type.rules.forEach(rule=>details.append(text('p',describeRule(rule,type.name,false))));rules.append(details);}row.append(rules);const action=document.createElement('td');const edit=button('Edit',()=>openPhase(type,'library',edit));edit.dataset.editPhase=type.id;action.append(edit);row.append(action);$('type-rows').append(row);});
+      if(!visible.length){const row=document.createElement('tr'),cell=text('td','No matching phases. Create a phase or change your search.','muted');cell.colSpan=4;row.append(cell);$('type-rows').append(row);}
+      $('type-count').textContent=`Showing ${visible.length} of ${types.length} phases. Durations use whole active weeks; Christmas pauses are applied when a procurement is scheduled.`;
+    }
+    $('phase-search').addEventListener('input',renderTypes);
+    function anchorLabel(template){const item=template.items.find(item=>item.id===template.anchorId&&item.kind==='milestone');return item?'Milestone: '+item.label:'Not selected';}
+    function renderTemplates(){
+      $('template-rows').replaceChildren();templates.forEach(template=>{const row=document.createElement('tr'),name=document.createElement('td');name.append(text('strong',template.name),document.createElement('br'),text('span',template.description,'muted'));row.append(name);const phaseCount=template.items.filter(item=>item.kind==='phase').length,milestones=template.items.length-phaseCount;row.append(text('td',`${phaseCount} phases${milestones?` · ${milestones} milestones`:''}`),text('td',anchorLabel(template)));const action=document.createElement('td');const edit=button('Edit',()=>openTemplate(template));edit.dataset.editTemplate=template.id;action.append(edit);row.append(action);$('template-rows').append(row);});
+      $('template-list').hidden=Boolean(templateDraft);$('template-editor').hidden=!templateDraft;
+    }
+    function markDirty(){templateDirty=true;$('template-dirty').hidden=false;status('template-status','');}
+    function openTemplate(template=null){
+      if(templateDraft){status('page-status','A template draft is already open. Save or cancel it before opening another.',true);$('template-editor-title').focus();return;}
+      templateDraft=template?clone(template):{id:null,name:'',description:'',items:[],anchorId:''};templateDirty=!template;reviewedRelationships=new Map();relationshipChecks=new Map();templateDraft.items.forEach((item,index)=>reviewedRelationships.set(item.id,relationshipSnapshot(item,index)));status('page-status','');renderTemplates();renderTemplateEditor();$('template-editor-title').focus();
+    }
+    $('create-template').addEventListener('click',()=>openTemplate());
+    function renderTemplateEditor(){
+      if(!templateDraft)return;
+      $('template-editor-title').textContent=templateDraft.id?'Edit template':'Create template';$('template-name').value=templateDraft.name;$('template-description').value=templateDraft.description;$('template-dirty').hidden=!templateDirty;
+      renderSequence();renderTemplateAnchor();status('template-status','');
+    }
+    function durationDescription(item){
+      if(item.kind==='milestone')return 'Milestone · no duration';
+      const weeks=item.libraryDefaultWeeks,name=item.librarySourceName,unit=weeks===1?'week':'weeks';
+      return item.weeks===weeks
+        ? `Default duration is ${weeks} ${unit}, copied from '${name}' phase in Library.`
+        : `Default duration of ${weeks} ${unit} for '${name}' phase overridden by user for this procurement template.`;
+    }
+    function relationshipSnapshot(item,index){const previous=templateDraft.items[index-1];return {previousId:previous?.id||null,previousLabel:previous?.label||'',relation:item.relation,amount:item.amount};}
+    function relationshipError(item,index){
+      if(item.relation==='sequence')return '';
+      if(index===0)return 'This is now the first item. Change its relationship to Sequential.';
+      if(!Number.isInteger(item.amount)||item.amount<1)return 'Enter a positive whole-week amount, or choose Sequential.';
+      const previous=templateDraft.items[index-1];
+      if(item.relation==='overlap'&&(item.kind==='milestone'||previous.kind==='milestone'))return 'An overlap needs two activity phases. Choose Sequential or change the order so the overlap is between phases.';
+      if(item.relation==='overlap'&&item.amount>Math.min(item.weeks,previous.weeks))return `The ${item.amount}-week overlap exceeds the duration of “${item.weeks<previous.weeks?item.label:previous.label}”. Reduce the overlap or amend the phase duration.`;
+      return '';
+    }
+    function synchroniseRelationshipChecks(){
+      relationshipChecks=new Map();if(!templateDraft)return;
+      const liveIds=new Set(templateDraft.items.map(item=>item.id));for(const id of reviewedRelationships.keys())if(!liveIds.has(id))reviewedRelationships.delete(id);
+      templateDraft.items.forEach((item,index)=>{
+        const current=relationshipSnapshot(item,index);let before=reviewedRelationships.get(item.id);
+        if(!before){before=current;reviewedRelationships.set(item.id,current);}
+        const error=relationshipError(item,index);
+        if(error||item.relation!=='sequence'&&before.previousId!==current.previousId){relationshipChecks.set(item.id,{before,current,error});}
+        else reviewedRelationships.set(item.id,current);
+      });
+    }
+    function renderRelationshipNote(cell,item,index){
+      cell.querySelector('.relationship-context')?.remove();
+      const check=relationshipChecks.get(item.id),previous=templateDraft.items[index-1];
+      cell.classList.toggle('needs-review',Boolean(check));cell.classList.toggle('relationship-error',Boolean(check?.error));
+      const note=document.createElement('div');note.id=`relationship-note-${item.id}`;note.className=`relationship-context${check?' check':''}${check?.error?' error':''}`;
+      cell.querySelectorAll('select,input').forEach(control=>{control.setAttribute('aria-describedby',note.id);control.setAttribute('aria-invalid',String(Boolean(check?.error)));});
+      if(!check){note.textContent=previous?`Follows “${previous.label}”.`:'First item in the schedule.';cell.append(note);return;}
+      note.append(text('strong',check.error?'Relationship needs correcting':item.relation==='overlap'?'Check this overlap':'Check this gap'));
+      if(check.before.previousId!==check.current.previousId){
+        const oldPrevious=templateDraft.items.find(phase=>phase.id===check.before.previousId);
+        note.append(text('span',`Previously followed: ${oldPrevious?.label||check.before.previousLabel||'nothing (first item)'}.`),text('span',`Now follows: ${previous?.label||'nothing (first item)'}.`));
+      }
+      if(check.error)note.append(text('p',check.error));
+      else{
+        note.append(text('p',`Still set to start ${item.amount} active week${item.amount===1?'':'s'} ${item.relation==='overlap'?'before':'after'} “${previous.label}” finishes.`));
+        note.append(button('Keep this relationship',()=>{
+          const currentIndex=templateDraft.items.findIndex(phase=>phase.id===item.id);if(relationshipError(item,currentIndex))return;
+          reviewedRelationships.set(item.id,relationshipSnapshot(item,currentIndex));updateRelationshipFeedback();status('reorder-status',`Relationship confirmed for ${item.label}.`);
+          $('sequence-rows').querySelector(`tr[data-item-id="${item.id}"] .relation select`)?.focus();
+        }));
+      }
+      cell.append(note);
+    }
+    function renderRelationshipSummary(){const count=relationshipChecks.size;$('relationship-review-summary').hidden=count===0;$('relationship-review-count').textContent=`${count} relationship${count===1?' needs':'s need'} review before saving.`;}
+    function updateRelationshipFeedback(){
+      synchroniseRelationshipChecks();if(!templateDraft)return;
+      templateDraft.items.forEach((item,index)=>{const cell=$('sequence-rows').querySelector(`tr[data-item-id="${item.id}"] .relation-cell`);if(cell)renderRelationshipNote(cell,item,index);});renderRelationshipSummary();
+      if(!relationshipChecks.size&&$('template-status').textContent.startsWith('Review the highlighted overlap and gap settings'))status('template-status','All overlap and gap checks have been resolved.');
+    }
+    function acceptRelationshipAmendment(item){const index=templateDraft.items.findIndex(phase=>phase.id===item.id);if(!relationshipError(item,index))reviewedRelationships.set(item.id,relationshipSnapshot(item,index));}
+    function focusRelationshipCheck(){const id=relationshipChecks.keys().next().value;if(!id)return;const cell=$('sequence-rows').querySelector(`tr[data-item-id="${id}"] .relation-cell`);cell?.scrollIntoView({block:'center',inline:'nearest'});cell?.querySelector('select:not(:disabled),input:not(:disabled)')?.focus({preventScroll:true});}
+    $('review-first-relationship').addEventListener('click',focusRelationshipCheck);
+    function renderSequence(){
+      synchroniseRelationshipChecks();
+      const body=$('sequence-rows');body.replaceChildren();
+      if(!templateDraft.items.length){const row=document.createElement('tr'),cell=text('td','No phases yet. Add an existing phase, create a new one, or add a milestone.','muted');cell.colSpan=6;row.append(cell);body.append(row);renderRelationshipSummary();return;}
+      templateDraft.items.forEach((item,index)=>{
+        const row=document.createElement('tr');row.dataset.itemId=item.id;row.append(text('td',String(index+1)));const labelCell=document.createElement('td');labelCell.className='label-cell';const label=document.createElement('input');label.value=item.label;label.dataset.item=item.id;label.dataset.key='label';label.setAttribute('aria-label',`Row ${index+1} phase or milestone name`);const durationNote=text('small',durationDescription(item));durationNote.id=`duration-note-${item.id}`;durationNote.setAttribute('aria-live','polite');labelCell.append(label,durationNote);row.append(labelCell);
+        const weeksCell=document.createElement('td');weeksCell.className='weeks-cell';const duration=document.createElement('input');duration.type='number';duration.min='1';duration.max='1000';duration.step='1';duration.value=item.weeks;duration.disabled=item.kind==='milestone';duration.dataset.item=item.id;duration.dataset.key='weeks';duration.setAttribute('aria-label',`${item.label} duration in whole weeks`);duration.setAttribute('aria-describedby',durationNote.id);weeksCell.append(duration);row.append(weeksCell);
+        const relationCell=document.createElement('td');relationCell.className='relation-cell';const relation=document.createElement('div');relation.className='relation';const select=document.createElement('select');for(const [value,name]of[['sequence','Sequential'],['overlap','Overlap'],['gap','Gap before']]){const option=text('option',name);option.value=value;option.disabled=index===0&&value!=='sequence';select.append(option);}select.value=item.relation;select.disabled=index===0&&item.relation==='sequence';select.dataset.item=item.id;select.dataset.key='relation';select.setAttribute('aria-label',`${item.label} relationship to previous item`);const amount=document.createElement('input');amount.type='number';amount.min='1';amount.max='1000';amount.step='1';amount.value=item.amount||1;amount.disabled=index===0||item.relation==='sequence';amount.dataset.item=item.id;amount.dataset.key='amount';amount.setAttribute('aria-label',`${item.label} overlap or gap in whole weeks`);relation.append(select,amount);relationCell.append(relation);row.append(relationCell);
+        const rulesCell=document.createElement('td'),currentRules=item.kind==='phase'?(types.find(type=>type.id===item.typeId)?.rules||[]):[];if(currentRules.length){currentRules.forEach(rule=>rulesCell.append(text('p',describeRule(rule,typeName(item.typeId),false),'shared-rule-description')));}else rulesCell.append(text('span',item.kind==='milestone'?'Not applicable':'No rules','muted'));row.append(rulesCell);
+        const controls=document.createElement('td'),buttons=document.createElement('div');buttons.className='order-buttons';
+        const remove=button('×',()=>{templateDraft.items=templateDraft.items.filter(current=>current.id!==item.id);if(templateDraft.anchorId===item.id)templateDraft.anchorId='';markDirty();renderSequence();renderTemplateAnchor();},'remove');remove.setAttribute('aria-label',`Remove ${item.label}`);buttons.append(remove);
+        const grip=button('⠿',()=>{},'drag-handle');grip.dataset.dragItem=item.id;grip.setAttribute('aria-label',`Reorder ${item.label}`);grip.setAttribute('aria-describedby','reorder-instructions');grip.setAttribute('aria-pressed','false');grip.title='Hold and drag to reorder. Keyboard: Space or Enter, then arrow keys, then Space or Enter.';buttons.append(grip);controls.append(buttons);row.append(controls);body.append(row);
+      });
+      updateRelationshipFeedback();
+    }
+    function reorderRows(){return [...$('sequence-rows').querySelectorAll('tr[data-item-id]')];}
+    function markDropPosition(slot){
+      if(!dragState)return;
+      const rows=reorderRows(),state=dragState,previous=state.to;
+      state.to=Math.max(0,Math.min(rows.length-1,slot>state.from?slot-1:slot));
+      rows.forEach(row=>row.classList.remove('drop-before','drop-after'));
+      if(slot>=rows.length)rows[rows.length-1]?.classList.add('drop-after');else rows[slot]?.classList.add('drop-before');
+      $('reorder-ghost').textContent=`${state.label} → position ${state.to+1}`;
+      if(state.keyboard&&state.to!==previous)status('reorder-status',`${state.label}: position ${state.to+1} of ${rows.length}. Press Space or Enter to drop, or Escape to cancel.`);
+    }
+    function updatePointerPosition(){
+      const state=dragState;if(!state||state.keyboard||!state.active)return;
+      const rows=reorderRows(),rect=$('sequence-scroll').getBoundingClientRect();
+      state.validDrop=state.x>=rect.left&&state.x<=rect.right&&state.y>=rect.top&&state.y<=rect.bottom;
+      let slot=rows.length;
+      for(let index=0;index<rows.length;index++){const bounds=rows[index].getBoundingClientRect();if(state.y<bounds.top+bounds.height/2){slot=index;break;}}
+      markDropPosition(slot);
+      if(!state.validDrop)$('reorder-ghost').textContent=`${state.label} · release inside the table to place`;
+      const ghost=$('reorder-ghost');ghost.style.left=`${Math.max(8,Math.min(state.x+14,innerWidth-ghost.offsetWidth-8))}px`;ghost.style.top=`${Math.max(8,Math.min(state.y+14,innerHeight-ghost.offsetHeight-8))}px`;
+    }
+    function animateReorder(){
+      if(!dragState||dragState.keyboard||!dragState.active)return;
+      const rect=$('sequence-scroll').getBoundingClientRect();
+      if(dragState.x>=rect.left&&dragState.x<=rect.right){if(dragState.y<75)window.scrollBy(0,-14);else if(dragState.y>innerHeight-75)window.scrollBy(0,14);}
+      updatePointerPosition();dragAnimation=requestAnimationFrame(animateReorder);
+    }
+    function activateReorder(){
+      const state=dragState;if(!state)return;
+      state.active=true;state.handle.setAttribute('aria-pressed','true');state.handle.closest('tr').classList.add('dragging');$('reorder-ghost').hidden=false;
+      status('reorder-status',`Picked up ${state.label}. Choose its new position.`);
+      if(state.keyboard){const rect=state.handle.getBoundingClientRect();$('reorder-ghost').style.left=`${Math.max(8,Math.min(rect.left-180,innerWidth-360))}px`;$('reorder-ghost').style.top=`${Math.max(8,rect.top-45)}px`;markDropPosition(state.from);}else animateReorder();
+    }
+    function finishReorder(apply,restoreFocus=true){
+      if(!dragState)return;
+      const state=dragState;dragState=null;cancelAnimationFrame(dragAnimation);
+      if(state.pointerId!==undefined&&state.handle.hasPointerCapture(state.pointerId))state.handle.releasePointerCapture(state.pointerId);
+      state.handle.setAttribute('aria-pressed','false');reorderRows().forEach(row=>row.classList.remove('dragging','drop-before','drop-after'));$('reorder-ghost').hidden=true;
+      const commit=apply&&state.active&&(state.keyboard||state.validDrop);
+      if(commit&&state.from!==state.to){const [item]=templateDraft.items.splice(state.from,1);templateDraft.items.splice(state.to,0,item);markDirty();renderSequence();renderTemplateAnchor();status('reorder-status',`${state.label} moved to position ${state.to+1}.`);}
+      else if(state.active)status('reorder-status',commit?'Row kept in its original position.':'Reordering cancelled. The phase order is unchanged.');
+      if(restoreFocus)$('sequence-rows').querySelector(`button[data-drag-item="${state.id}"]`)?.focus();
+    }
+    $('sequence-rows').addEventListener('pointerdown',event=>{
+      const grip=event.target.closest('.drag-handle');if(!grip||event.button!==0)return;
+      event.preventDefault();finishReorder(false,false);grip.focus();
+      const from=templateDraft.items.findIndex(item=>item.id===grip.dataset.dragItem),item=templateDraft.items[from];
+      dragState={id:item.id,label:item.label,from,to:from,handle:grip,pointerId:event.pointerId,x:event.clientX,y:event.clientY,startX:event.clientX,startY:event.clientY,keyboard:false,active:false,validDrop:true};grip.setPointerCapture(event.pointerId);
+    });
+    $('sequence-rows').addEventListener('pointermove',event=>{
+      if(!dragState||dragState.keyboard||event.pointerId!==dragState.pointerId)return;
+      dragState.x=event.clientX;dragState.y=event.clientY;
+      if(!dragState.active&&Math.hypot(event.clientX-dragState.startX,event.clientY-dragState.startY)>4)activateReorder();
+      if(dragState.active)updatePointerPosition();
+    });
+    $('sequence-rows').addEventListener('pointerup',event=>{if(dragState&&!dragState.keyboard&&event.pointerId===dragState.pointerId){updatePointerPosition();finishReorder(true);}});
+    $('sequence-rows').addEventListener('pointercancel',()=>finishReorder(false));
+    $('sequence-rows').addEventListener('lostpointercapture',()=>{if(dragState&&!dragState.keyboard)finishReorder(false);});
+    $('sequence-rows').addEventListener('keydown',event=>{
+      const grip=event.target.closest('.drag-handle');if(!grip)return;
+      if(event.key===' '||event.key==='Enter'){
+        event.preventDefault();if(dragState?.keyboard){finishReorder(true);return;}if(dragState)return;
+        const from=templateDraft.items.findIndex(item=>item.id===grip.dataset.dragItem),item=templateDraft.items[from];dragState={id:item.id,label:item.label,from,to:from,handle:grip,keyboard:true,active:false};activateReorder();return;
+      }
+      if(!dragState?.keyboard)return;
+      if(['ArrowUp','ArrowDown','Home','End'].includes(event.key)){event.preventDefault();const count=templateDraft.items.length;const to=event.key==='Home'?0:event.key==='End'?count-1:Math.max(0,Math.min(count-1,dragState.to+(event.key==='ArrowUp'?-1:1)));markDropPosition(to>dragState.from?to+1:to);}
+      else if(event.key==='Tab')finishReorder(false,false);
+    });
+    $('sequence-rows').addEventListener('focusout',event=>{if(dragState?.keyboard&&event.target===dragState.handle)finishReorder(false,false);});
+    document.addEventListener('keydown',event=>{if(event.key==='Escape'&&dragState){event.preventDefault();finishReorder(false);}});
+    window.addEventListener('blur',()=>finishReorder(false,false));
+
+
+    function matchingSchedulePhases(query){
+      const search=query.trim().toLowerCase().replace(/\s+/g,' ');
+      return types.filter(type=>type.name.toLowerCase().replace(/\s+/g,' ').includes(search));
+    }
+    function renderScheduleLibrary(){
+      const visible=matchingSchedulePhases($('schedule-search').value),results=$('schedule-library-results');
+      if($('schedule-source').value&&!visible.some(type=>type.id===$('schedule-source').value)){
+        $('schedule-source').value='';updateScheduleSource();
+      }
+      results.replaceChildren();
+      visible.forEach(source=>{
+        const row=document.createElement('label');row.className='schedule-library-choice';
+        const radio=document.createElement('input');radio.type='radio';radio.name='schedule-library-phase';radio.value=source.id;radio.checked=source.id===$('schedule-source').value;
+        radio.addEventListener('change',()=>{if(!radio.checked)return;$('schedule-source').value=source.id;updateScheduleSource();status('schedule-item-status','');});
+        const swatch=text('i','', 'swatch');swatch.style.background=source.color;swatch.setAttribute('aria-hidden','true');
+        row.append(radio,swatch,text('strong',source.name),text('small',source.weeks+' weeks'));results.append(row);
+      });
+      $('schedule-results-count').textContent='Showing '+visible.length+' of '+types.length+' Library phases.';
+      $('schedule-library-empty').hidden=visible.length>0;
+      $('schedule-library-empty').textContent=types.length?'No phases match this search. Try another name, or create a new phase below.':'No phases have been created in the Library yet. Create the first phase to add it to this template.';
+      $('schedule-create-help').textContent=types.length?'If nothing here meets your need, create a new phase.':'Create a reusable phase for this template and future procurements.';
+      $('create-phase-in-template').classList.toggle('primary',!types.length);
+    }
+    function updateScheduleSource(){
+      const source=types.find(type=>type.id===$('schedule-source').value),isPhase=scheduleItemMode==='phase';
+      $('schedule-name').disabled=isPhase&&!source;$('schedule-weeks').disabled=!isPhase||!source;
+      $('schedule-selected-fields').hidden=isPhase&&!source;
+      $('save-schedule-item').disabled=isPhase&&!source;
+      if(source&&isPhase){$('schedule-name').value=source.name;$('schedule-weeks').value=source.weeks;}
+      else{$('schedule-name').value='';$('schedule-weeks').value='';}
+      $('schedule-rule-preview').hidden=!isPhase||!source;
+      $('schedule-rule-summary').replaceChildren();
+      if(source&&isPhase){
+        if(source.rules.length)source.rules.forEach(rule=>$('schedule-rule-summary').append(text('p',describeRule(rule,source.name,false))));
+        else $('schedule-rule-summary').append(text('p','No overlap rules defined.'));
+      }
+      updateScheduleDurationNote();
+    }
+    function updateScheduleDurationNote(){
+      if(scheduleItemMode==='milestone'){$('schedule-source-note').textContent='Milestones mark an event or boundary and have no duration. They can be used as the usual anchor position.';return;}
+      const source=types.find(type=>type.id===$('schedule-source').value);
+      if(!source){$('schedule-source-note').textContent='Select a phase to review its current Library defaults.';return;}
+      const overridden=Number($('schedule-weeks').value)!==source.weeks;
+      $('schedule-source-note').textContent="Library default: "+source.weeks+" weeks for '"+source.name+"'. "+(overridden?'This duration is overridden for this template.':'You can override the name or duration for this template without changing the Library.')+' Shared overlap rules remain linked to the Library phase.';
+    }
+    function openScheduleItem(mode,trigger,asAnchor=false){
+      if(!templateDraft)return;finishReorder(false,false);scheduleItemMode=mode;scheduleItemTrigger=trigger;scheduleItemIsAnchor=asAnchor;
+      const isPhase=mode==='phase';$('schedule-item-title').textContent=asAnchor?'Add anchor milestone':isPhase?'Add phase':'Add milestone';
+      $('schedule-item-description').textContent=isPhase?'Browse or search the Library, then select a phase to review it. Create a new phase if none meets your need.':'Name the event or boundary to add to this template.';
+      $('schedule-library-browser').hidden=!isPhase;$('schedule-search').disabled=!isPhase;
+      $('schedule-weeks-field').hidden=!isPhase;$('schedule-weeks').required=isPhase;
+      $('schedule-source').value='';$('schedule-search').value='';
+      $('schedule-name-label').textContent=isPhase?'Name in this template':'Milestone name';$('save-schedule-item').textContent=asAnchor?'Add and use as anchor':isPhase?'Add phase to template':'Add milestone to template';
+      $('schedule-position-field').hidden=!asAnchor;$('schedule-position').replaceChildren();
+      if(asAnchor){
+        const first=text('option','At the start of the schedule');first.value='';$('schedule-position').append(first);
+        templateDraft.items.forEach(item=>{const option=text('option','After '+item.label);option.value=item.id;$('schedule-position').append(option);});
+        $('schedule-position').value=templateDraft.items.at(-1)?.id??'';
+      }
+      $('schedule-placement-help').textContent=asAnchor?'The milestone will be placed at the selected position and used as the anchor. It has no duration.':'The item will be added at the end of the schedule. You can then move it with its row grip and review its relationship to the preceding activity.';
+      status('schedule-item-status','');updateScheduleSource();if(isPhase)renderScheduleLibrary();
+      $('schedule-item-dialog').showModal();document.body.classList.add('modal-open');(isPhase?$('schedule-search'):$('schedule-name')).focus();
+    }
+    function closeScheduleItem(){ $('schedule-item-dialog').close();document.body.classList.remove('modal-open');scheduleItemTrigger?.focus();scheduleItemTrigger=null; }
+    $('add-existing').addEventListener('click',()=>openScheduleItem('phase',$('add-existing')));
+    $('add-milestone').addEventListener('click',()=>openScheduleItem('milestone',$('add-milestone')));
+    $('template-add-anchor').addEventListener('click',()=>openScheduleItem('milestone',$('template-add-anchor'),true));
+    $('schedule-search').addEventListener('input',renderScheduleLibrary);$('schedule-search').addEventListener('keydown',event=>{if(event.key==='Enter')event.preventDefault();});$('schedule-weeks').addEventListener('input',updateScheduleDurationNote);
+    $('close-schedule-item').addEventListener('click',closeScheduleItem);$('cancel-schedule-item').addEventListener('click',closeScheduleItem);$('schedule-item-dialog').addEventListener('cancel',event=>{event.preventDefault();closeScheduleItem();});
+    $('schedule-item-form').addEventListener('submit',event=>{
+      event.preventDefault();if(!templateDraft)return;
+      if(scheduleItemMode==='phase'&&!types.some(type=>type.id===$('schedule-source').value)){status('schedule-item-status','Select a Library phase, or create a new phase.',true);$('schedule-search').focus();return;}
+      const name=$('schedule-name').value.trim();if(!name){status('schedule-item-status','Enter a name.',true);return;}
+      let item;if(scheduleItemMode==='phase'){
+        const source=types.find(type=>type.id===$('schedule-source').value),weeks=Number($('schedule-weeks').value);if(!source||!Number.isInteger(weeks)||weeks<1||weeks>1000){status('schedule-item-status','Choose a library phase and enter a positive whole-week duration.',true);return;}
+        item=occurrence(source.id);item.label=name;item.weeks=weeks;
+      }else item=milestone(name);
+      if(scheduleItemIsAnchor){
+        const after=templateDraft.items.findIndex(current=>current.id===$('schedule-position').value);
+        templateDraft.items.splice(after+1,0,item);templateDraft.anchorId=item.id;
+      }else templateDraft.items.push(item);
+      markDirty();renderSequence();renderTemplateAnchor();closeScheduleItem();status('template-status',scheduleItemIsAnchor?'“'+name+'” added and selected as the anchor milestone.':`“${name}” added at the end of the schedule. Use its grip to reposition it if needed.`);
+    });
+    $('template-name').addEventListener('input',()=>{if(templateDraft){templateDraft.name=$('template-name').value;markDirty();}});
+    $('template-description').addEventListener('input',()=>{if(templateDraft){templateDraft.description=$('template-description').value;markDirty();}});
+    $('sequence-rows').addEventListener('input',event=>{
+      const field=event.target,item=templateDraft?.items.find(item=>item.id===field.dataset.item);if(!item||field.tagName!=='INPUT')return;
+      const key=field.dataset.key,before=item[key];item[key]=key==='label'?field.value:Number(field.value);markDirty();
+      if(key==='label')renderTemplateAnchor();
+      if(key==='weeks')$(`duration-note-${item.id}`).textContent=durationDescription(item);
+      if(key==='amount'&&item.amount!==before)acceptRelationshipAmendment(item);
+      updateRelationshipFeedback();
+    });
+    $('sequence-rows').addEventListener('change',event=>{
+      const field=event.target,item=templateDraft?.items.find(item=>item.id===field.dataset.item);if(!item||field.dataset.key!=='relation')return;
+      const before=item.relation;item.relation=field.value;item.amount=field.value==='sequence'?0:item.amount||1;
+      if(item.relation!==before)acceptRelationshipAmendment(item);
+      markDirty();renderSequence();const row=$('sequence-rows').querySelector(`tr[data-item-id="${item.id}"]`);row?.querySelector('.relation select:not(:disabled),.relation input:not(:disabled),.drag-handle')?.focus();
+    });
+    function renderTemplateAnchor(){
+      const select=$('template-anchor');select.replaceChildren();const empty=text('option','Choose an anchor milestone');empty.value='';select.append(empty);
+      templateDraft.items.filter(item=>item.kind==='milestone').forEach(item=>{const option=text('option',item.label||'Unnamed milestone');option.value=item.id;select.append(option);});select.value=templateDraft.anchorId;
+      const anchor=templateDraft.items.find(item=>item.id===templateDraft.anchorId&&item.kind==='milestone');
+      $('template-anchor-summary').textContent=anchor?anchorLabel(templateDraft)+'. Its date is supplied separately for each procurement.':'Select an anchor milestone before saving the template.';
+    }
+    $('template-anchor').addEventListener('change',()=>{templateDraft.anchorId=$('template-anchor').value;markDirty();renderTemplateAnchor();});
+    function appendPhase(id){if(!templateDraft)return;templateDraft.items.push(occurrence(id));markDirty();renderSequence();renderTemplateAnchor();}
+    $('save-template').addEventListener('click',()=>{
+      if(!templateDraft)return;
+      const name=templateDraft.name.trim();if(!name){status('template-status','Enter a template name.',true);return;}
+      if(templates.some(template=>template.id!==templateDraft.id&&template.name.toLowerCase()===name.toLowerCase())){status('template-status','A template with that name already exists.',true);return;}
+      if(!templateDraft.items.some(item=>item.kind==='phase')){status('template-status','Add at least one activity phase.',true);return;}
+      updateRelationshipFeedback();
+      if(relationshipChecks.size){status('template-status','Review the highlighted overlap and gap settings before saving. Change an affected setting or confirm “Keep this relationship”.',true);focusRelationshipCheck();return;}
+      for(let i=0;i<templateDraft.items.length;i++){const item=templateDraft.items[i];if(!item.label.trim()){status('template-status',`Enter a name for row ${i+1}.`,true);return;}if(item.kind==='phase'&&(!Number.isInteger(item.weeks)||item.weeks<1||item.weeks>1000)){status('template-status',`${item.label}: use 1–1000 whole weeks.`,true);return;}if(i===0&&item.relation!=='sequence'){status('template-status','The first item cannot depend on a previous item. Set its relationship to Sequential.',true);return;}if(item.relation!=='sequence'&&(!Number.isInteger(item.amount)||item.amount<1||item.amount>1000)){status('template-status',`${item.label}: use a positive whole-week overlap or gap.`,true);return;}if(item.relation==='overlap'&&(i===0||item.amount>Math.min(item.weeks,templateDraft.items[i-1].weeks))){status('template-status',`${item.label}: overlap cannot exceed either adjacent activity's duration.`,true);return;}}
+      if(!templateDraft.items.some(item=>item.id===templateDraft.anchorId&&item.kind==='milestone')){status('template-status','Select an anchor milestone.',true);return;}
+      const saved=clone(templateDraft);saved.name=name;if(!saved.id)saved.id=`template-${++nextTemplate}`;const index=templates.findIndex(template=>template.id===saved.id);
+      const nextTemplates=clone(templates);if(index<0)nextTemplates.push(saved);else nextTemplates[index]=saved;
+      try{persistLibrary(types,sharedRules,nextTemplates);}catch(error){status('template-status',error.message,true);return;}
+      templates=nextTemplates;
+      templateDraft=null;templateDirty=false;renderTemplates();counts();status('page-status',`“${name}” saved to this browser’s Library and available when adding a procurement. Existing procurements are unchanged.`);$('create-template').focus();
+    });
+    $('cancel-template').addEventListener('click',()=>{templateDraft=null;templateDirty=false;renderTemplates();status('page-status','Template draft discarded. Any phases explicitly created in the library are retained in this browser’s Library.');$('create-template').focus();});
+    function draftName(){return $('phase-name').value.trim()||'this phase';}
+    function ruleScope(rule){
+      const explanation='This rule checks for overlapping activity in other procurements.';
+      if(rule.kind==='same')return `${explanation} ${draftName()} ↔ other occurrences of this phase.`;
+      if(rule.kind==='type')return `${explanation} ${draftName()} ↔ ${rule.target?typeName(rule.target):'choose the other phase'}. This relationship appears under both phases. Changes or removal apply to both.`;
+      return 'Choose which phase could clash with this one, then select a severity.';
+    }
+    function renderPhaseRules(){
+      const list=$('phase-rules');list.replaceChildren();$('rules-empty').hidden=Boolean(phaseDraft.rules.length);
+      phaseDraft.rules.forEach((rule,index)=>{
+        const row=document.createElement('li');row.id=`phase-rule-${rule.rowKey}`;if(rule.invalid)row.className='invalid';
+        const heading=document.createElement('div');heading.className='rule-row-heading';heading.append(text('strong',`Overlap rule ${index+1}${rule.sharedId?' · shared':''}`));
+        const remove=button(rule.sharedId?'Remove shared rule':'Remove rule',()=>{
+          if(rule.sharedId&&!phaseDraft.removedRuleIds.includes(rule.sharedId))phaseDraft.removedRuleIds.push(rule.sharedId);
+          phaseDraft.rules=phaseDraft.rules.filter(current=>current.rowKey!==rule.rowKey);renderPhaseRules();status('rule-status',rule.sharedId?'Removal is pending. Saving removes this shared relationship from all linked phases.':'Rule row removed.');
+        });heading.append(remove);row.append(heading);
+        const fields=document.createElement('div');fields.className='rule-row-grid';
+        const field=(label,control)=>{const wrapper=text('label',label,'field');wrapper.append(control);fields.append(wrapper);};
+        const clearError=()=>{rule.invalid=false;row.classList.remove('invalid');};
+        const select=(options,value,onChange)=>{const node=document.createElement('select');options.forEach(([value,label])=>{const option=text('option',label);option.value=value;node.append(option);});node.value=value;node.addEventListener('change',()=>{clearError();onChange(node.value);});return node;};
+        const options=[['','Choose a phase'],[phaseDraft.id,`${draftName()} (same phase)`],...types.filter(type=>type.id!==phaseDraft.id).map(type=>[type.id,type.name])];
+        const target=select(options,rule.target,value=>{rule.target=value;rule.kind=value?(value===phaseDraft.id?'same':'type'):'';scope.textContent=ruleScope(rule);});
+        field('Which phase(s) in other procurements could clash problematically with this one?',target);
+        const severity=select([['','Choose severity'],['warning','Warning — undesirable but possible'],['critical','Critical clash — unacceptable']],rule.severity,value=>{rule.severity=value;});field('Severity',severity);
+        row.append(fields);
+        const reason=text('label','Reason for this rule — optional','field rule-reason'),explanation=document.createElement('textarea');explanation.value=rule.reason||'';explanation.maxLength=500;explanation.placeholder='Explain why these activities should not overlap.';explanation.addEventListener('input',()=>rule.reason=explanation.value);reason.append(explanation);row.append(reason);
+        const scope=text('p',ruleScope(rule),'rule-scope');row.append(scope);
+        if(rule.invalid)row.append(text('p','Choose a phase and severity, or remove this row before saving.','status error'));
+        list.append(row);
+      });
+    }
+    const templateDefaultFields=[
+      {key:'name',valueKey:'label',defaultKey:'librarySourceName',label:'Phase name'},
+      {key:'weeks',valueKey:'weeks',defaultKey:'libraryDefaultWeeks',label:'Duration'}
+    ];
+    function formatDefault(field,value){return field.key==='weeks'?`${value} week${value===1?'':'s'}`:String(value);}
+    function ruleFingerprint(registry){return JSON.stringify(registry.map(rule=>({pair:[rule.sourceId,rule.target].sort().join('|'),severity:rule.severity,reason:rule.reason||''})).sort((a,b)=>a.pair.localeCompare(b.pair)));}
+    function phaseStep(review){
+      hideTemplateUpdateTooltip();
+      $('phase-edit-fields').hidden=review;$('phase-update-review').hidden=!review;$('phase-edit-actions').hidden=review;$('phase-review-actions').hidden=!review;
+      const existing=types.some(type=>type.id===phaseDraft?.id);
+      $('phase-dialog-title').textContent=review?'Review phase changes':existing?'Edit phase':'Create phase';
+      $('phase-dialog-description').textContent=review?'Choose how the library edit should affect existing procurement templates.':phaseContext==='template'?'Create a reusable phase and add a copy to your template draft.':'Define a reusable activity for future templates and procurements.';
+      $('phase-modal-content').scrollTop=0;
+    }
+    function inspectTemplateImpact(template,source,saved,changes){
+      const result=clone(template),occurrences=[];let updateCount=0;
+      template.items.forEach((item,index)=>{
+        if(item.kind!=='phase'||item.typeId!==saved.id)return;
+        const actions=changes.map(field=>{
+          const originalDefault=item[field.defaultKey]??source[field.key];
+          const overridden=item[field.valueKey]!==originalDefault;
+          const next=overridden?item[field.valueKey]:saved[field.key];
+          const updates=!overridden&&next!==item[field.valueKey];if(updates)updateCount++;
+          if(!overridden)result.items[index][field.valueKey]=next;
+          result.items[index][field.defaultKey]=saved[field.key];
+          return {field,before:item[field.valueKey],next,overridden,updates};
+        });
+        occurrences.push({label:item.label,weeks:item.weeks,index,actions});
+      });
+      const openDraft=templateDraft?.id===template.id;
+      const invalidOverlap=result.items.find((item,index)=>item.relation==='overlap'&&(index===0||item.amount>Math.min(item.weeks,result.items[index-1].weeks)));
+      const blocked=openDraft?'This template is open in the editor. It will not be overwritten; review its draft separately.':invalidOverlap?`The proposed duration would make the ${invalidOverlap.amount}-week overlap at “${invalidOverlap.label}” exceed an adjacent phase's duration. Review the template separately.`:'';
+      return {id:template.id,name:template.name,occurrences,proposedTemplate:result,updateCount,blocked,eligible:updateCount>0&&!blocked};
+    }
+    let templateHintSource=null,templateHintTimer;
+    function templateUpdateDisabledReason(impact){
+      const location=`open Procurement templates, edit “${impact.name}”, and adjust the relevant phase`;
+      if(templateDraft?.id===impact.id)return `This template is already open for editing, so Library name and duration changes will not overwrite its draft. Return to the open template editor to make those changes, then save the template.`;
+      if(impact.blocked)return impact.blocked+` To make this update, ${location} durations or overlap settings.`;
+      const actions=impact.occurrences.flatMap(occurrence=>occurrence.actions),customised=actions.filter(action=>action.overridden);
+      if(actions.length&&customised.length===actions.length){
+        const fields=new Set(customised.map(action=>action.field.key));
+        if(fields.size===1&&fields.has('weeks'))return `These durations were already customised in this template and differ from the Library default, so changing that default will not update them. To change them, ${location} durations.`;
+        if(fields.size===1&&fields.has('name'))return `These phase names were already customised in this template and differ from the Library default, so changing that default will not update them. To change them, ${location} names.`;
+        return `These phase names and durations were already customised in this template, so Library default changes will not update them. To change them, ${location} names and durations.`;
+      }
+      if(customised.length)return `This template keeps its customised phase values, and its other values already match the proposed Library defaults, so there is nothing to update. To make changes, ${location} names or durations.`;
+      return `This template already matches the proposed Library defaults, so no update is needed. To make other changes, ${location} names or durations.`;
+    }
+    function hideTemplateUpdateTooltip(){clearTimeout(templateHintTimer);templateHintSource=null;$('template-update-tooltip').hidden=true;}
+    function showTemplateUpdateTooltip(source,reason){
+      clearTimeout(templateHintTimer);templateHintSource=source;
+      const tip=$('template-update-tooltip');tip.textContent=reason;tip.hidden=false;
+      const rect=source.getBoundingClientRect(),left=Math.max(12,Math.min(rect.right+10,innerWidth-tip.offsetWidth-12));
+      const below=rect.bottom+8,top=below+tip.offsetHeight<=innerHeight-12?below:Math.max(12,rect.top-tip.offsetHeight-8);
+      tip.style.left=left+'px';tip.style.top=top+'px';
+    }
+    function scheduleTemplateTooltipHide(){
+      clearTimeout(templateHintTimer);templateHintTimer=setTimeout(()=>{
+        if(!templateHintSource||document.activeElement!==templateHintSource&&!templateHintSource.matches(':hover')&&!$('template-update-tooltip').matches(':hover'))hideTemplateUpdateTooltip();
+      },200);
+    }
+    function disabledTemplateCheckbox(checkbox,impact){
+      const reason=templateUpdateDisabledReason(impact),reasonId='update-reason-'+impact.id;
+      const wrapper=text('span','','disabled-update-target');wrapper.tabIndex=0;wrapper.setAttribute('role','group');wrapper.setAttribute('aria-disabled','true');
+      wrapper.setAttribute('aria-label','Update '+impact.name+' unavailable');wrapper.setAttribute('aria-describedby',reasonId);
+      checkbox.setAttribute('aria-describedby',reasonId);
+      const description=text('span',reason);description.id=reasonId;description.hidden=true;
+      wrapper.append(checkbox,description);
+      wrapper.addEventListener('pointerenter',()=>showTemplateUpdateTooltip(wrapper,reason));wrapper.addEventListener('focus',()=>showTemplateUpdateTooltip(wrapper,reason));
+      wrapper.addEventListener('pointerleave',scheduleTemplateTooltipHide);wrapper.addEventListener('blur',scheduleTemplateTooltipHide);
+      return wrapper;
+    }
+    $('template-update-tooltip').addEventListener('pointerenter',()=>clearTimeout(templateHintTimer));
+    $('template-update-tooltip').addEventListener('pointerleave',scheduleTemplateTooltipHide);
+    document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!$('template-update-tooltip').hidden){event.preventDefault();event.stopPropagation();hideTemplateUpdateTooltip();}});
+    window.addEventListener('scroll',event=>{
+      if(event.target===$('template-update-tooltip'))return;
+      const source=templateHintSource;
+      if(source&&document.activeElement===source){
+        const reason=$('template-update-tooltip').textContent;
+        requestAnimationFrame(()=>{
+          if(templateHintSource!==source||document.activeElement!==source||!source.isConnected)return;
+          const rect=source.getBoundingClientRect(),area=$('phase-modal-content').getBoundingClientRect();
+          if(rect.bottom<area.top||rect.top>area.bottom||rect.right<area.left||rect.left>area.right)hideTemplateUpdateTooltip();
+          else showTemplateUpdateTooltip(source,reason);
+        });
+      }else hideTemplateUpdateTooltip();
+    },true);
+    window.addEventListener('resize',hideTemplateUpdateTooltip);
+    function selectionCount(){
+      if(!pendingPhaseSave)return;
+      const count=pendingPhaseSave.selected.size;
+      $('template-selection-count').textContent=`${count} template${count===1?'':'s'} selected. Unselected templates retain their names and durations.`;
+      $('save-update-templates').disabled=count===0;
+    }
+    function reviewPhaseSave(saved,registry){
+      const source=types.find(type=>type.id===saved.id);
+      const changes=source?templateDefaultFields.filter(field=>source[field.key]!==saved[field.key]):[];
+      const colourChanged=Boolean(source&&source.color!==saved.color);
+      const rulesChanged=ruleFingerprint(sharedRules)!==ruleFingerprint(registry);
+      const linked=templates.filter(template=>template.items.some(item=>item.kind==='phase'&&item.typeId===saved.id));
+      const draftLinked=Boolean(templateDraft?.items.some(item=>item.kind==='phase'&&item.typeId===saved.id));
+      pendingPhaseSave={saved,registry,source,changes,colourChanged,rulesChanged,selected:new Set(),impacts:source?linked.map(template=>inspectTemplateImpact(template,source,saved,changes)):[]};
+      if(!source||!changes.length||(!linked.length&&!draftLinked)){
+        commitPhaseSave(false);
+        // A failed direct save must leave the form editable and allow a retry.
+        pendingPhaseSave=null;
+        return;
+      }
+      $('phase-source-changes').replaceChildren();
+      changes.forEach(field=>$('phase-source-changes').append(text('li',`${field.label}: ${formatDefault(field,source[field.key])} → ${formatDefault(field,saved[field.key])}`)));
+      if(colourChanged)$('phase-source-changes').append(text('li','The new colour will apply wherever this Library phase is used, including unselected templates and existing procurements.'));
+      if(rulesChanged)$('phase-source-changes').append(text('li','Shared overlap rules will update throughout the library and template rule displays, regardless of template selection. No dates change.'));
+      $('template-impact-rows').replaceChildren();
+      pendingPhaseSave.impacts.forEach(impact=>{
+        const row=document.createElement('tr'),pick=document.createElement('td'),checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.id=`update-${impact.id}`;checkbox.disabled=!impact.eligible;checkbox.setAttribute('aria-label',`Update ${impact.name}`);
+        checkbox.addEventListener('change',()=>{if(checkbox.checked)pendingPhaseSave.selected.add(impact.id);else pendingPhaseSave.selected.delete(impact.id);selectionCount();});pick.append(checkbox.disabled?disabledTemplateCheckbox(checkbox,impact):checkbox);row.append(pick);
+        const nameCell=document.createElement('td'),label=text('label',impact.name);label.htmlFor=checkbox.id;nameCell.append(label,text('small',`${impact.occurrences.length} occurrence${impact.occurrences.length===1?'':'s'} of this phase`));row.append(nameCell);
+        const details=document.createElement('td');
+        impact.occurrences.forEach(occurrence=>{
+          const block=document.createElement('div');block.className='occurrence-impact';block.append(text('strong',`Row ${occurrence.index+1}: ${occurrence.label}`));
+          const list=document.createElement('ul');
+          if(!occurrence.actions.length)list.append(text('li',`Keep ${occurrence.weeks} weeks. No name or duration change.`,'impact-keep'));
+          occurrence.actions.forEach(action=>{
+            const {field,before,next,overridden,updates}=action;
+            const description=overridden?`${field.label}: keep ${formatDefault(field,before)} — template override.`:updates?`${field.label}: ${formatDefault(field,before)} → ${formatDefault(field,next)} — inherited from Library.`:`${field.label}: keep ${formatDefault(field,before)} — already matches the new default.`;
+            list.append(text('li',description,updates?'impact-update':'impact-keep'));
+          });block.append(list);details.append(block);
+        });
+        if(impact.blocked)details.append(text('div',impact.blocked,'impact-blocked'));
+        else if(!impact.updateCount)details.append(text('small',changes.length?'No inherited values need updating. Template overrides are retained.':'Shared rule changes apply independently; there are no template-default updates to select.'));
+        row.append(details);$('template-impact-rows').append(row);
+      });
+      if(!linked.length){const row=document.createElement('tr'),cell=text('td','No saved templates use this phase.','muted');cell.colSpan=3;row.append(cell);$('template-impact-rows').append(row);}
+      $('open-draft-notice').replaceChildren();
+      if(draftLinked)$('open-draft-notice').append(text('div',`An open template draft (“${templateDraft.name||'Untitled template'}”) also uses this phase. Its names and durations will remain unchanged and need separate review. Colour and shared-rule changes apply when the phase is saved.`,'impact-blocked'));
+      selectionCount();phaseStep(true);$('phase-update-title').focus();
+    }
+    function commitPhaseSave(updateSelected){
+      if(!pendingPhaseSave)return;
+      const pending=pendingPhaseSave,selected=updateSelected?pending.selected:new Set();
+      if(updateSelected&&!selected.size)return;
+      const index=types.findIndex(type=>type.id===pending.saved.id);
+      const nextTypes=clone(types);if(index<0)nextTypes.push(pending.saved);else nextTypes[index]=pending.saved;
+      const nextTemplates=templates.map(template=>{const impact=pending.impacts.find(row=>row.id===template.id&&row.eligible&&selected.has(row.id));return impact?clone(impact.proposedTemplate):template;});
+      let savedLibrary;
+      try{savedLibrary=persistLibrary(nextTypes,pending.registry,nextTemplates);}catch(error){status('phase-status',error.message,true);return;}
+
+      if(index<0)types.push(pending.saved);else types[index]=pending.saved;
+      sharedRules=clone(pending.registry);refreshSharedRuleViews();
+      templates=clone(savedLibrary.templates);
+      const savedId=pending.saved.id,name=pending.saved.name,addToTemplate=phaseContext==='template';
+      const draftLinked=Boolean(templateDraft?.items.some(item=>item.kind==='phase'&&item.typeId===savedId));
+      if(pending.colourChanged&&templateDraft)templateDraft.items.forEach(item=>{
+        if(item.kind==='phase'&&item.typeId===savedId){item.color=pending.saved.color;item.libraryDefaultColor=item.color;}
+      });
+      if(addToTemplate&&templateDraft)appendPhase(savedId);
+      const selectedCount=selected.size;closePhase();renderTypes();renderTemplates();counts();if(templateDraft)renderTemplateEditor();
+      const automaticOnly=Boolean(pending.source&&!pending.changes.length&&(pending.colourChanged||pending.rulesChanged));
+      const sharedChanges=pending.colourChanged?(pending.rulesChanged?'Colour and shared overlap rules':'Colour'):'Shared overlap rules';
+      const automaticMessage=`${sharedChanges} for “${name}” updated across the Library, procurement templates and pipeline. No procurement dates changed.`;
+      if(draftLinked)status('template-status',automaticOnly?automaticMessage:`Library phase “${name}” changed. This open draft's names and durations were retained; review them separately. Colours and shared rules are current.`);
+      status('page-status',automaticOnly?automaticMessage:addToTemplate?`“${name}” created in the library and added to the unsaved template. The Library phase is saved in this browser.`:`“${name}” ${index<0?'created':'updated'} in this browser’s Library. ${selectedCount?`${selectedCount} selected template${selectedCount===1?'':'s'} updated; name and duration overrides retained.`:'Template names and durations were not changed.'} ${pending.colourChanged?'Colour updated wherever this phase is used. ':''}Shared rules are current. No procurement dates changed.`);
+      if(addToTemplate){if($('schedule-item-dialog').open)closeScheduleItem();else $('add-existing').focus();status('template-status',`“${name}” created in the Library and added to the unsaved template.`);}else(document.querySelector(`button[data-edit-phase="${savedId}"]`)||$('create-phase')).focus();
+    }
+    $('back-phase-edit').addEventListener('click',()=>{pendingPhaseSave=null;phaseStep(false);$('phase-name').focus();});
+    $('save-library-only').addEventListener('click',()=>commitPhaseSave(false));
+    $('save-update-templates').addEventListener('click',()=>commitPhaseSave(true));
+    function openPhase(type=null,context='library',trigger=null){
+      phaseContext=context;phaseTrigger=trigger;phaseDraft=type?clone(type):{id:`custom-${++nextType}`,name:context==='template'&&$('schedule-item-dialog').open?$('schedule-search').value.trim():'',weeks:2,color:'#315ed4',rules:[]};
+      phaseDraft.rules=phaseDraft.rules.map(rule=>({...rule,rowKey:rule.sharedId||rule.id}));phaseDraft.removedRuleIds=[];
+      $('phase-dialog-title').textContent=type?'Edit phase':'Create phase';$('phase-name').value=phaseDraft.name;$('phase-weeks').value=phaseDraft.weeks;$('phase-color').value=phaseDraft.color;
+      pendingPhaseSave=null;$('save-phase').textContent=context==='template'?'Create and add to template':type?'Save phase (demo)':'Create phase (demo)';status('rule-status','');status('phase-status','');phaseStep(false);renderPhaseRules();$('phase-dialog').showModal();document.body.classList.add('modal-open');$('phase-name').focus();
+    }
+    function closePhase(){const previousId=phaseDraft?.id;hideTemplateUpdateTooltip();$('phase-dialog').close();document.body.classList.toggle('modal-open',$('schedule-item-dialog').open);phaseDraft=null;pendingPhaseSave=null;const fallback=phaseContext==='template'?$('create-phase-in-template'):document.querySelector(`button[data-edit-phase="${previousId}"]`)||$('create-phase');if(phaseTrigger?.isConnected)phaseTrigger.focus();else fallback?.focus();phaseTrigger=null;}
+    $('create-phase').addEventListener('click',()=>openPhase(null,'library',$('create-phase')));
+    $('create-phase-in-template').addEventListener('click',()=>openPhase(null,'template',$('create-phase-in-template')));
+    $('close-phase').addEventListener('click',closePhase);$('cancel-phase').addEventListener('click',closePhase);$('phase-dialog').addEventListener('cancel',event=>{event.preventDefault();closePhase();});
+    $('phase-name').addEventListener('input',renderPhaseRules);
+    $('add-rule').addEventListener('click',()=>{
+      const rowKey=`draft-${++nextRule}`;phaseDraft.rules.push({rowKey,kind:'',target:'',severity:'',reason:''});renderPhaseRules();$(`phase-rule-${rowKey}`).querySelector('select').focus();status('rule-status','Complete the new row. It will be saved together with the phase; there is no separate rule-save step.');
+    });
+    $('phase-form').addEventListener('submit',event=>{
+      if(pendingPhaseSave){event.preventDefault();return;}
+      event.preventDefault();if(!phaseDraft)return;const name=$('phase-name').value.trim(),weeks=Number($('phase-weeks').value);if(!name||!Number.isInteger(weeks)||weeks<1||weeks>1000){status('phase-status','Provide a phase name and a positive whole-week duration.',true);return;}if(types.some(type=>type.id!==phaseDraft.id&&type.name.toLowerCase()===name.toLowerCase())){status('phase-status','A phase with that name already exists.',true);return;}
+      let incomplete=false;
+      phaseDraft.rules.forEach(rule=>{rule.invalid=!['same','type'].includes(rule.kind)||!['warning','critical'].includes(rule.severity)||!(rule.target===phaseDraft.id||types.some(type=>type.id===rule.target));if(rule.invalid)incomplete=true;});
+      if(incomplete){renderPhaseRules();status('phase-status','Some overlap rules are incomplete. Complete the highlighted rows or remove them before saving.',true);$('phase-rules').querySelector('.invalid select:not(:disabled)')?.focus();return;}
+      const rowIds=new Set(phaseDraft.rules.map(rule=>rule.sharedId).filter(Boolean)),removedIds=new Set(phaseDraft.removedRuleIds);
+      const registry=sharedRules.filter(rule=>!rowIds.has(rule.id)&&!removedIds.has(rule.id));
+      const signature=rule=>[rule.sourceId,rule.target].sort().join('|');
+      const seenRules=new Set(registry.map(signature));let duplicate=false;
+      phaseDraft.rules.forEach(rule=>{
+        const canonical={id:rule.sharedId||`library-${rule.rowKey}`,sourceId:phaseDraft.id,kind:rule.kind,target:rule.target,severity:rule.severity,reason:(rule.reason||'').trim()};
+        if(seenRules.has(signature(canonical))){rule.invalid=true;duplicate=true;}else{seenRules.add(signature(canonical));registry.push(canonical);}
+      });
+      if(duplicate){renderPhaseRules();status('phase-status','A shared rule for that relationship already exists. Keep one rule per relationship and remove the duplicate row.',true);$('phase-rules').querySelector('.invalid select:not(:disabled)')?.focus();return;}
+      const saved={id:phaseDraft.id,name,weeks,color:$('phase-color').value,rules:[]};reviewPhaseSave(saved,registry);
+    });
+    counts();show('overview',false);
+    window.LTPPDemo.guard(()=>templateDirty||phaseDraft!==null||$('schedule-item-dialog').open);
+  </script>
+</body>
+</html>

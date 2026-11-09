@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pipeline page options · LTPP</title>
+  <link rel="stylesheet" href="demo-navigation.css">
+  <style>
+    :root { font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif; color:#17283d; background:#e5eaf1; font-synthesis:none; --blue:#315ed4; --line:#dce3ed; --muted:#596c83; --workspace:#6b4f86; --workspace-bg:#f2edf8; }
+    * { box-sizing:border-box; }
+    body { margin:0; }
+    button,input,select,textarea { font:inherit; }
+    button,a,input,select,textarea { outline-offset:3px; }
+    :focus-visible { outline:3px solid var(--blue); }
+    button,a { -webkit-tap-highlight-color:transparent; }
+    button { cursor:pointer; }
+    a { color:var(--blue); }
+    [hidden] { display:none!important; }
+    h1,h2,h3,p { margin-top:0; }
+    h1 { font-size:27px; letter-spacing:-.025em; margin-bottom:8px; }
+    h2 { font-size:18px; letter-spacing:-.01em; }
+    p { line-height:1.65; }
+    .review { max-width:1500px; margin:auto; padding:28px 32px 22px; }
+    .review-heading { display:flex; justify-content:space-between; align-items:start; gap:24px; }
+    .review-heading p { margin:0; max-width:76ch; color:#465b74; font-size:14px; }
+    .review-heading>a { font-size:13px; white-space:nowrap; padding-top:7px; }
+    .options { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin:22px 0 18px; }
+    .option { padding:14px 16px; border:1px solid #b9c6d8; background:#f6f8fb; color:#17283d; border-radius:7px; text-align:left; line-height:1.5; }
+    .option strong { display:block; font-size:14px; }
+    .option span { display:block; margin-top:4px; font-size:12px; color:#526780; }
+    .option[aria-pressed="true"] { border-color:var(--blue); background:#fff; box-shadow:inset 0 3px var(--blue); }
+    .review-bottom { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+    .state-picker { display:flex; align-items:center; flex-wrap:wrap; gap:7px; padding:0; margin:0; border:0; }
+    .state-picker legend { float:left; padding:8px 10px 8px 0; font-size:12px; font-weight:700; }
+    .state-picker label { position:relative; cursor:pointer; }
+    .state-picker input { position:absolute; opacity:0; width:1px; height:1px; }
+    .state-picker span { display:block; background:#f7f9fc; border:1px solid #bdcadb; border-radius:5px; padding:8px 12px; font-size:12px; }
+    .state-picker input:checked+span { color:#fff; background:#243b57; border-color:#243b57; }
+    .state-picker input:focus-visible+span { outline:3px solid var(--blue); outline-offset:3px; }
+    .preview-note { font-size:12px; color:#526780; margin:0; }
+    .preview-frame { max-width:1500px; margin:0 auto 32px; background:#f3f5f8; border:1px solid #bbc8d9; border-radius:9px; overflow:clip; min-height:850px; }
+    .preview-frame>.app-header { display:flex; align-items:center; gap:28px; padding:16px 28px; background:#17283d; color:#fff; }
+    .preview-frame .app-header small { font-size:11px; white-space:nowrap; }
+    .preview-frame .app-header .app-brand { font-size:18px; }
+    .preview-frame .app-nav button { font-size:13px; }
+    .page-content { padding:28px; min-width:0; }
+    .page-heading { display:flex; align-items:center; justify-content:space-between; gap:24px; margin-bottom:20px; }
+    .page-heading>div:first-child { min-width:0; }
+    .page-title { font-size:28px; overflow-wrap:anywhere; margin:0 0 8px; letter-spacing:-.025em; line-height:1.25; }
+    .page-heading p { margin:5px 0 0; color:var(--muted); font-size:13px; max-width:76ch; }
+    .actions { display:flex; align-items:center; flex-wrap:wrap; gap:9px; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; min-height:39px; padding:9px 14px; border:1px solid #bcc9db; border-radius:5px; background:#fff; color:#243b57; font-size:12px; font-weight:650; text-decoration:none; line-height:1.4; }
+    .btn:hover { background:#edf2f9; }
+    .btn.primary { color:#fff; border-color:var(--blue); background:var(--blue); }
+    .btn.primary:hover { background:#244caa; }
+    .btn.quiet { border-color:transparent; background:transparent; padding-left:0; justify-content:start; }
+    .btn:disabled { opacity:.5; cursor:default; }
+    .status { display:inline-flex; align-items:center; gap:7px; border-radius:4px; padding:5px 8px; font-size:11px; font-weight:700; line-height:1.4; }
+    .status.live { color:#244caa; background:#eaf1fd; }
+    .status.viewing { color:#584070; background:#eee6f6; }
+    .status.editing { color:#584070; background:#eee6f6; }
+    .status.live::before { content:""; width:7px; height:7px; border-radius:50%; background:#315ed4; }
+    .pipeline-name { display:block; margin-top:8px; font-weight:700; font-size:14px; }
+    .context-line { font-size:12px; color:var(--muted); margin:7px 0 0; line-height:1.6; }
+    .notice { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:12px 16px; margin:18px 0; border:1px solid #d9d0e6; background:#f9f6fc; border-radius:5px; color:#584070; font-size:12px; line-height:1.6; }
+    .card { border:1px solid var(--line); border-radius:8px; background:#fff; overflow:hidden; margin-top:20px; min-width:0; }
+    .card-head { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; padding:18px 20px; border-bottom:1px solid #e4e9f1; }
+    .card-head h3 { font-size:15px; margin:0; }
+    .card-head p { font-size:12px; color:var(--muted); margin:4px 0 0; }
+    .timeline-controls { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+    .timeline-controls label { font-size:11px; color:#526780; display:flex; align-items:center; gap:8px; }
+    .option-3 .timeline-controls .btn { background:var(--workspace); border-color:var(--workspace); color:#fff; }
+    .option-3 .timeline-controls .btn:hover { background:#584070; border-color:#584070; }
+    select { min-height:36px; padding:6px 10px; border:1px solid #c1ccdc; border-radius:4px; color:#243b57; background:#fff; font-size:12px; max-width:100%; }
+    .timeline-scroll { overflow:auto; position:relative; }
+    .timeline { min-width:900px; }
+    .timeline-row { display:grid; grid-template-columns:225px minmax(0,1fr); min-height:100px; border-bottom:1px solid #e5eaf2; }
+    .timeline-row:last-child { border-bottom:0; }
+    .timeline-label { z-index:2; position:sticky; left:0; background:#fff; padding:20px 16px; border-right:1px solid #dce3ed; font-size:12px; line-height:1.6; }
+    .timeline-label strong { display:block; font-weight:650; }
+    .timeline-label small { display:block; color:var(--muted); font-size:11px; margin-top:6px; }
+    .timeline-row.months { min-height:40px; }
+    .months .timeline-label { padding:10px 16px; background:#f7f9fc; color:#526780; font-size:11px; }
+    .month-track { display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); background:#f7f9fc; }
+    .month-track span { font-size:10px; color:#526780; padding:12px 0 10px 7px; border-left:1px solid #e4e9f1; white-space:nowrap; }
+    .track { position:relative; background:repeating-linear-gradient(to right,#e9edf4 0 1px,transparent 1px calc(100% / 12)); }
+    .phase { position:absolute; top:28px; height:25px; background:var(--phase); color:#fff; border-radius:2px; padding:5px 6px; font-size:10px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+    .milestone { position:absolute; top:15px; bottom:15px; border-left:2px solid #243b57; }
+    .milestone::before { content:"◆"; position:absolute; left:-6px; top:-6px; font-size:11px; color:#243b57; }
+    .milestone span { position:absolute; top:47px; left:5px; font-size:9px; color:#526780; white-space:nowrap; }
+    .clash { position:absolute; top:22px; height:37px; border:2px solid #ad3c4e; border-radius:3px; pointer-events:none; }
+    .clash.warning { border:2px dashed #ad7c19; }
+    .legend { display:flex; flex-wrap:wrap; gap:12px 20px; padding:12px 20px; border-top:1px solid #e5eaf2; background:#fafbfd; font-size:11px; color:#526780; }
+    .legend span { display:inline-flex; align-items:center; gap:6px; }
+    .legend i { display:inline-block; width:14px; height:9px; background:var(--phase); border-radius:1px; }
+    .legend i.outline { border:2px solid #ad3c4e; background:transparent; height:12px; }
+    .checks { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; padding:14px 20px; background:#fff; border:1px solid var(--line); border-radius:7px; }
+    .checks strong { font-size:13px; }
+    .checks p { font-size:11px; color:var(--muted); margin:3px 0 0; }
+    .check-counts { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+    .badge { padding:5px 8px; border:1px solid #e2b8bf; background:#fff0f2; color:#982e3e; border-radius:4px; font-size:11px; font-weight:650; }
+    .badge.warning { color:#80560d; border-color:#e2cc9f; background:#fff7e3; }
+    .check-counts a { font-size:11px; margin-left:4px; }
+    .table-scroll { overflow:auto; position:relative; }
+    table { width:100%; min-width:700px; border-collapse:collapse; text-align:left; font-size:12px; }
+    th,td { padding:13px 20px; border-bottom:1px solid #e5eaf2; line-height:1.6; vertical-align:top; }
+    th { color:#5b6f87; font-size:11px; font-weight:650; background:#fafbfd; }
+    tr:last-child td { border-bottom:0; }
+    td small { display:block; color:var(--muted); font-size:11px; }
+    .page-footer { margin:20px 0 0; color:var(--muted); font-size:11px; }
+    .theme-heading { border-radius:7px; padding:24px; border:1px solid #cddbf6; background:#eaf1fd; }
+    .theme-heading .status { padding-left:0; }
+    .theme-heading.alternative { border-color:#d9cce8; background:#f0e9f7; }
+    .theme-heading.alternative .status { background:transparent; }
+    .return-link { display:block; margin-bottom:10px; color:#584070; font-size:12px; text-decoration:underline; border:0; padding:0; background:none; }
+    .workspace-bar { display:flex; align-items:center; justify-content:space-between; gap:24px; padding:20px 28px; background:#eee7f5; border-top:4px solid var(--workspace); border-bottom:1px solid #d9cce7; }
+    .workspace-bar h2 { font-size:22px; margin:0; overflow-wrap:anywhere; }
+    .workspace-bar p { margin:5px 0 0; font-size:12px; color:#584070; }
+    .workspace-bar .status { background:#e4d9ef; }
+    .option-2.non-live { background:#f6f3fa; }
+    .workspace-summary { display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:20px; }
+    .workspace-summary h2 { margin:0; font-size:17px; }
+    .home-layout { display:grid; grid-template-columns:260px minmax(0,1fr); gap:24px; align-items:start; }
+    .home-layout>.home-content { min-width:0; }
+    .home-layout .card:first-child { margin-top:0; }
+    .home-overview { padding:22px; border:1px solid #cddbf6; border-top:4px solid var(--blue); border-radius:7px; background:#eaf1fd; }
+    .home-overview.alternative { border-color:#d9cce8; border-top-color:var(--workspace); background:var(--workspace-bg); }
+    .home-overview.alternative dl { border-color:#d9cce8; }
+    .home-overview.alternative .btn.primary { background:var(--workspace); border-color:var(--workspace); }
+    .home-overview.alternative .btn.primary:hover { background:#584070; }
+    .home-overview.alternative .status { background:transparent; }
+    .home-overview h2 { overflow-wrap:anywhere; }
+    .home-overview .panel-save-state { color:#584070; font-weight:700; }
+    .home-overview.viewing { background:#eef1f4; border-color:#cdd5df; border-top-color:#64748b; }
+    .home-overview.viewing dl { border-color:#cdd5df; }
+    .home-overview.viewing .status,.home-overview.viewing .panel-save-state,.home-overview.viewing .return-link { color:#44546a; }
+    .home-overview.viewing .btn.primary { background:#52647b; border-color:#52647b; }
+    .home-overview.viewing .btn.primary:hover { background:#3f5168; }
+    .home-overview h2 { font-size:25px; margin:12px 0 8px; line-height:1.3; }
+    .home-overview p { color:#526780; font-size:12px; }
+    .home-overview dl { margin:20px 0; padding:14px 0; border-top:1px solid #cfdbed; border-bottom:1px solid #cfdbed; }
+    .home-overview dt { color:#526780; font-size:11px; margin-bottom:4px; }
+    .home-overview dd { font-size:12px; margin:0 0 13px; font-weight:650; line-height:1.6; }
+    .home-overview dd:last-child { margin-bottom:0; }
+    .home-overview .actions { align-items:stretch; flex-direction:column; }
+    .home-overview .status { padding:0; }
+    .home-overview .home-checks { margin-top:20px; font-size:12px; line-height:1.8; }
+    .home-overview .home-checks strong { display:block; margin-bottom:8px; }
+    .home-overview .badge { display:block; margin-bottom:6px; }
+    .home-layout .timeline { min-width:800px; }
+    .home-layout .timeline-row { grid-template-columns:185px minmax(0,1fr); }
+    .option-3.non-live .page-content { background:#fff; }
+    .option-3.non-live .card { border-radius:4px; }
+    .option-3.non-live .timeline-row { min-height:112px; }
+    .option-3.non-live .timeline-row.months { min-height:40px; }
+    .review-caption { padding:0 32px 24px; max-width:1500px; margin:auto; color:#465b74; font-size:13px; line-height:1.7; }
+    dialog { border:1px solid #c4cfdf; border-radius:9px; padding:0; width:min(520px,calc(100vw - 32px)); color:#17283d; background:#fff; max-height:calc(100vh - 40px); overflow:auto; }
+    dialog::backdrop { background:#17283d88; }
+    .dialog-head { padding:22px 24px 18px; border-bottom:1px solid var(--line); }
+    .dialog-head h2 { font-size:20px; margin:0 0 8px; }
+    .dialog-head p { font-size:13px; color:var(--muted); margin:0; }
+    .dialog-body { padding:20px 24px; }
+    .dialog-body label { display:block; font-size:12px; font-weight:650; margin-bottom:7px; }
+    .dialog-body input,.dialog-body textarea { width:100%; border:1px solid #bdcadb; border-radius:5px; padding:10px; font-size:13px; margin-bottom:18px; }
+    .dialog-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:8px; padding:16px 24px; border-top:1px solid var(--line); }
+    .saved-choice { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 0; }
+    .saved-choice+.saved-choice { border-top:1px solid var(--line); }
+    .saved-choice strong { font-size:13px; display:block; }
+    .saved-choice small { color:var(--muted); font-size:11px; }
+    .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    @media(min-width:1564px) { .preview-frame { margin-inline:auto; } }
+    @media(max-width:1050px) {
+      .preview-frame>.app-header { flex-wrap:wrap; gap:15px; }
+      .preview-frame .app-header small { margin-left:auto; }
+      .home-layout { grid-template-columns:220px minmax(0,1fr); gap:18px; }
+      .home-overview { padding:18px; }
+      .page-heading,.workspace-bar { align-items:start; }
+      .page-heading .actions,.workspace-bar>.actions { justify-content:flex-end; }
+    }
+    @media(max-width:760px) {
+      .review { padding:22px 16px 18px; }
+      .review-heading { flex-direction:column; gap:10px; }
+      .options { gap:8px; }
+      .option { padding:12px; }
+      .option strong { font-size:12px; }
+      .option span { font-size:11px; }
+      .preview-frame { border-radius:0; margin-bottom:20px; border-inline:0; }
+      .page-content { padding:20px 16px; }
+      .page-heading,.workspace-bar { flex-direction:column; gap:16px; }
+      .page-heading .actions,.workspace-bar>.actions { justify-content:flex-start; }
+      .theme-heading { padding:18px; }
+      .workspace-bar { padding:18px 16px; }
+      .page-title { font-size:24px; }
+      .home-layout { grid-template-columns:minmax(0,1fr); }
+      .home-overview dl { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:18px; }
+      .home-overview dd { grid-row:2; }
+      .home-overview .actions { flex-direction:row; }
+      .home-overview .home-checks { display:none; }
+      .review-caption { padding:0 16px 20px; }
+      .preview-frame>.app-header { padding:14px 16px; }
+      .preview-frame .app-nav { order:3; width:100%; }
+      .preview-frame .app-nav button { padding:8px 10px; }
+      .preview-frame .app-header small { font-size:10px; }
+      .card-head { padding:15px 16px; }
+      .notice { align-items:start; flex-direction:column; gap:6px; }
+      .preview-frame .timeline-row { grid-template-columns:180px minmax(0,1fr); }
+    }
+    @media(max-width:440px) {
+      .options { grid-template-columns:minmax(0,1fr); gap:7px; margin-top:16px; }
+      .option { padding:10px 12px; }
+      .option span { margin-top:2px; }
+      .review h1 { font-size:24px; }
+      .state-picker { gap:6px; }
+      .state-picker legend { float:none; padding:0 0 8px; }
+      .state-picker span { padding:8px 10px; font-size:11px; }
+      .preview-frame .app-header small { width:100%; margin:0; }
+      .preview-frame .app-nav { order:initial; gap:0; }
+      .preview-frame .app-nav button { padding:8px; font-size:12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="review">
+    <div class="review-heading">
+      <div><h1>Pipeline page distinctions</h1><p>Compare three ways to distinguish the live homepage from viewing or editing another pipeline.</p></div>
+      <a href="pipeline.html">Open the current prototype</a>
+    </div>
+    <div class="options" role="group" aria-label="Design option">
+      <button class="option" type="button" data-option="1" aria-pressed="false"><strong>1. Two visual treatments</strong><span>Same layout, different header and colour.</span></button>
+      <button class="option" type="button" data-option="2" aria-pressed="true"><strong>2. Homepage and workspace</strong><span>A separate workspace bar and return route.</span></button>
+      <button class="option" type="button" data-option="3" aria-pressed="false"><strong>3. Consistent context panel</strong><span>Blue live plan; grey viewing; purple editing.</span></button>
+    </div>
+    <div class="review-bottom">
+      <fieldset class="state-picker"><legend>Preview state</legend>
+        <label><input type="radio" name="state" value="live" checked><span>Live baseline</span></label>
+        <label><input type="radio" name="state" value="viewing"><span>Viewing saved</span></label>
+        <label><input type="radio" name="state" value="editing"><span>Editing</span></label>
+      </fieldset>
+      <p class="preview-note">Visual preview · Fictional examples · Changes stay in this page only</p>
+    </div>
+  </div>
+  <div id="preview" class="preview-frame option-2"></div>
+  <p id="design-caption" class="review-caption"></p>
+  <p id="preview-status" class="sr-only" role="status" aria-live="polite"></p>
+  <dialog id="action-dialog" aria-labelledby="dialog-title"></dialog>
+  <noscript><p class="review">Enable JavaScript to switch between these visual mockups.</p></noscript>
+  <script>
+    (() => {
+      'use strict';
+      const $ = selector => document.querySelector(selector);
+      const safe = value => String(value).replace(/[&<>"']/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
+      const params = new URLSearchParams(location.hash.slice(1));
+      let option = ['1','2','3'].includes(params.get('option')) ? Number(params.get('option')) : 2;
+      let state = ['live','viewing','editing'].includes(params.get('state')) ? params.get('state') : 'live';
+      let name = 'Later service transfer', fromBaseline = false, dirty = state === 'editing', shift = 1, windowSize = '12';
+      let feedback = '', previousFocus = null;
+      const phases = [
+        {name:'Writing bids',colour:'#437ac2'},
+        {name:'Assessment',colour:'#8865a9'},
+        {name:'Mobilisation',colour:'#398479'}
+      ];
+      const months = ['Sep 30','Oct','Nov','Dec','Jan 31','Feb','Mar','Apr','May','Jun','Jul','Aug'];
+      const plans = [
+        {name:'Community services procurement',start:2,assessment:4,mobilisation:6,anchor:9,anchorDate:'16 Jun 2031',startDate:'4 Nov 2030'},
+        {name:'Digital services procurement',start:3,assessment:5,mobilisation:7,anchor:10,anchorDate:'14 Jul 2031',startDate:'2 Dec 2030'},
+        {name:'Facilities support procurement',start:0,assessment:2,mobilisation:4,anchor:8,anchorDate:'12 May 2031',startDate:'2 Sep 2030'}
+      ];
+      const captions = {
+        1:'Option 1 keeps the page structure familiar. Blue identifies the live baseline; the purple header, explicit viewing or editing label, and return link identify an alternative.',
+        2:'Option 2 separates the live homepage from a workspace. The workspace bar contains the pipeline name, its viewing or editing state, the return route and relevant actions.',
+        3:'Option 3 keeps the same context panel beside the schedule in every state. Blue identifies the live baseline, grey identifies read-only viewing, and purple identifies editing. Add procurement sits beside Adjust pipeline in the editing toolbar. On mobile, the panel sits above the schedule.'
+      };
+      function button(label,action,primary) { return '<button class="btn'+(primary?' primary':'')+'" type="button" data-action="'+action+'">'+label+'</button>'; }
+      function status() {
+        return state === 'live' ? '<span class="status live">Current baseline · Live pipeline</span>' : '<span class="status '+state+'">'+(state === 'viewing'?'Viewing saved pipeline':'Editing pipeline')+'</span>';
+      }
+      function currentName() { return state === 'live' ? 'Autumn pipeline' : name; }
+      function saveState() { return state === 'viewing' ? 'Saved 23 October 2026 · Read-only view' : fromBaseline ? 'Save any changes under a new name. The baseline stays unchanged.' : dirty ? 'Unsaved changes' : 'All changes saved'; }
+      function actions() {
+        if (state === 'live') return button('Edit this pipeline','edit-baseline',true)+button('Saved Pipelines','saved');
+        if (state === 'viewing') return button('Edit this pipeline','edit-saved',true);
+        return (fromBaseline ? '' : button('Save','save',true))+button('Save as…','save-as',fromBaseline)+(option===3?'':button('+ Add procurement','add'));
+      }
+      function back() { return '<button type="button" class="return-link" data-action="live">← Return to live pipeline</button>'; }
+      function nav() {
+        return '<header class="app-header"><a class="app-brand" href="#option='+option+'&amp;state=live" data-action="live"><span>LTPP</span><span class="app-brand-description">Long-term pipeline plan</span></a><nav class="app-nav" aria-label="Preview navigation"><button type="button" data-action="live"'+(state==='live'?' aria-current="page"':'')+'>Pipeline</button><button type="button" data-action="saved">Saved Pipelines</button><a href="templates-and-phase-library.html">Library</a><a href="how-it-works.html">How it works</a></nav><small>Fictional data</small></header>';
+      }
+      function checks() {
+        return '<section class="checks" aria-label="Pipeline checks"><div><strong>Pipeline checks</strong><p>Overlaps across all three procurements.</p></div><div class="check-counts"><span class="badge">1 critical clash</span><span class="badge warning">1 warning</span><a href="#preview-findings">Review findings</a></div></section>';
+      }
+      function phaseBlock(phase,start,length) {
+        return '<span class="phase" style="--phase:'+phase.colour+';left:'+start/12*100+'%;width:'+length/12*100+'%" title="'+phase.name+'">'+phase.name+'</span>';
+      }
+      function timeline() {
+        const rows = plans.map((plan,index) => {
+          const offset = index === 0 && state !== 'live' ? shift : 0;
+          const anchor = plan.anchor+offset;
+          return '<div class="timeline-row"><div class="timeline-label"><strong>'+plan.name+'</strong><small>Service begins '+(index === 0 && state !== 'live' ? ['16 Jun 2031','14 Jul 2031','11 Aug 2031'][Math.min(shift,2)] : plan.anchorDate)+'</small></div><div class="track">'+phaseBlock(phases[0],plan.start+offset,2)+phaseBlock(phases[1],plan.assessment+offset,2)+phaseBlock(phases[2],plan.mobilisation+offset,index===2?4:3)+'<span class="clash" style="left:'+((index===0?Math.max(plan.assessment+offset,5):index===1?Math.max(4+(state==='live'?0:shift),5):0)/12*100)+'%;width:'+((index<2?Math.max(0,Math.min(6+(state==='live'?0:shift),7)-Math.max(4+(state==='live'?0:shift),5)):0)/12*100)+'%"'+(index===2?' hidden':'')+'></span><span class="milestone" style="left:'+anchor/12*100+'%"><span>Service begins</span></span></div></div>';
+        }).join('');
+        return '<section class="card" aria-labelledby="timeline-title"><div class="card-head"><h3 id="timeline-title">Pipeline timeline</h3><div class="timeline-controls"><label>Viewing window <select id="viewing-window"><option value="12">One year</option><option value="6">Six months</option></select></label>'+(state==='editing'?button('Adjust pipeline','adjust')+(option===3?button('+ Add procurement','add'):''): '')+'</div></div><div class="timeline-scroll" tabindex="0" role="region" aria-label="Scrollable procurement timeline"><div class="timeline"'+(windowSize==='6'?' style="min-width:1600px"':'')+'><div class="timeline-row months"><div class="timeline-label">Procurement</div><div class="month-track">'+months.map(month=>'<span>'+month+'</span>').join('')+'</div></div>'+rows+'</div></div><div class="legend">'+phases.map(phase=>'<span><i style="--phase:'+phase.colour+'"></i>'+phase.name+'</span>').join('')+'<span>◆ Service begins</span><span><i class="outline"></i>Critical clash</span></div></section>';
+      }
+      function findings() {
+        return '<section class="card" id="preview-findings" aria-labelledby="findings-title"><div class="card-head"><h3 id="findings-title">Warnings and critical clashes</h3><p>Across the whole pipeline</p></div><div class="table-scroll" tabindex="0" role="region" aria-label="Overlap findings"><table><thead><tr><th scope="col">Severity</th><th scope="col">Activity</th><th scope="col">Procurements involved</th></tr></thead><tbody><tr><td><span class="badge">Critical clash</span></td><td>Assessment<small>The same assessment team is needed.</small></td><td>Community services procurement<br>Digital services procurement</td></tr><tr><td><span class="badge warning">Warning</span></td><td>Writing bids<small>Both procurements need supplier input.</small></td><td>Community services procurement<br>Digital services procurement</td></tr></tbody></table></div></section>';
+      }
+      function procurements() {
+        return '<section class="card" aria-labelledby="procurements-title"><div class="card-head"><h3 id="procurements-title">Procurements (3)</h3></div><div class="table-scroll" tabindex="0" role="region" aria-label="Procurement dates"><table><thead><tr><th scope="col">Procurement</th><th scope="col">Planning start</th><th scope="col">Service begins</th><th scope="col">Action</th></tr></thead><tbody>'+plans.map((plan,index)=>'<tr><td><strong>'+plan.name+'</strong></td><td>'+(index===0&&state!=='live'?['4 Nov 2030','2 Dec 2030','6 Jan 2031'][Math.min(shift,2)]:plan.startDate)+'</td><td>'+(index===0&&state!=='live'?['16 Jun 2031','14 Jul 2031','11 Aug 2031'][Math.min(shift,2)]:plan.anchorDate)+'</td><td>'+button(state==='editing'?'Edit':'View details','details-'+index)+'</td></tr>').join('')+'</tbody></table></div></section>';
+      }
+      function heading(className) {
+        return '<section class="page-heading '+className+'" aria-labelledby="page-title"><div>'+(state==='live'?'':back())+status()+'<h2 class="page-title" id="page-title" style="margin-top:12px">'+(state==='live'?'Live pipeline':(state==='viewing'?'Viewing: ':'Editing: ')+safe(name))+'</h2>'+(state==='live'?'<span class="pipeline-name">Autumn pipeline</span><p>The current plan for day-to-day activity. Its contents are fixed.</p><p>Confirmed 15 October 2026 by Alex Morgan.</p>':'<p>'+saveState()+'</p>')+'</div><div class="actions">'+actions()+'</div></section>';
+      }
+      function workspaceBar() {
+        return '<section class="workspace-bar" aria-labelledby="page-title"><div>'+back()+'<h2 id="page-title">'+(state==='viewing'?'Viewing: ':'Editing: ')+safe(name)+'</h2><p>'+saveState()+'</p></div><div class="actions">'+status()+actions()+'</div></section>';
+      }
+      function homeOverview() {
+        return '<div class="page-heading"><div><h2 class="page-title" id="page-title">Your procurement pipeline</h2><p>Follow the live plan, or explore a different way forward.</p></div></div><div class="home-layout"><aside class="home-overview" aria-label="Live baseline overview">'+status()+'<h2>Autumn pipeline</h2><p>The current plan for day-to-day activity.</p><dl><dt>Confirmed</dt><dd>15 October 2026<br>Alex Morgan</dd><dt>Scope</dt><dd>3 procurements<br>September 2030–August 2031</dd></dl><div class="actions">'+actions()+'</div><p class="context-line">Changes are saved separately. This baseline stays fixed.</p><div class="home-checks"><strong>Pipeline checks</strong><span class="badge">1 critical clash</span><span class="badge warning">1 warning</span><a href="#preview-findings">Review findings</a></div></aside><div class="home-content">'+timeline()+findings()+procurements()+'</div></div>';
+      }
+      function workspaceOverview() {
+        const viewing = state === 'viewing';
+        const progress = viewing ? 'Read-only view' : fromBaseline ? dirty ? 'Unsaved changes' : 'No changes yet' : dirty ? 'Unsaved changes' : 'All changes saved';
+        const description = viewing ? 'Inspect this saved alternative without changing it.' : fromBaseline ? 'Save any changes under a new name. The baseline stays unchanged.' : 'Make changes to this saved pipeline, or use Save as to keep another alternative.';
+        return '<div class="page-heading"><div><h2 class="page-title" id="page-title">'+(viewing?'Viewing saved pipeline':'Editing pipeline')+'</h2><p>The live baseline remains Autumn pipeline.</p></div></div><div class="home-layout"><aside class="home-overview alternative '+(viewing?'viewing':'editing')+'" aria-label="'+(viewing?'Saved pipeline overview':'Editing pipeline overview')+'">'+back()+status()+'<h2>'+safe(name)+'</h2><p class="panel-save-state">'+progress+'</p><p>'+description+'</p><dl><dt>'+(fromBaseline?'Source baseline':'Last saved')+'</dt><dd>'+(fromBaseline?'Autumn pipeline':'23 October 2026<br>Alex Morgan')+'</dd><dt>Scope</dt><dd>3 procurements<br>September 2030–August 2031</dd></dl><div class="actions">'+actions()+'</div><div class="home-checks"><strong>Pipeline checks</strong><span class="badge">1 critical clash</span><span class="badge warning">1 warning</span><a href="#preview-findings">Review findings</a></div></aside><div class="home-content">'+timeline()+findings()+procurements()+'</div></div>';
+      }
+      function render(announce) {
+        const preview = $('#preview');
+        const restorePageFocus = preview.contains(document.activeElement);
+        preview.className = 'preview-frame option-'+option+(state==='live'?'':' non-live');
+        let contents;
+        if (option === 3) contents = state === 'live' ? homeOverview() : workspaceOverview();
+        else contents = (option === 2 && state !== 'live' ? '<div class="workspace-summary"><h2>Procurement schedule</h2><span class="context-line">Live baseline: Autumn pipeline</span></div>' : heading(option===1?'theme-heading'+(state==='live'?'':' alternative'):''))+checks()+timeline()+findings()+procurements();
+        preview.innerHTML = nav()+(option===2&&state!=='live'?workspaceBar():'')+'<main class="page-content">'+(feedback?'<div class="notice" role="status">'+safe(feedback)+'</div>':'')+contents+'<p class="page-footer">Manage reusable phases and templates in the Library.</p></main>';
+        $('#page-title').tabIndex = -1;
+        if (restorePageFocus) $('#page-title').focus({preventScroll:true});
+        $('#viewing-window').value = windowSize;
+        document.querySelectorAll('[data-option]').forEach(element=>element.setAttribute('aria-pressed',String(Number(element.dataset.option)===option)));
+        document.querySelectorAll('input[name="state"]').forEach(element=>element.checked=element.value===state);
+        $('#design-caption').textContent = captions[option];
+        history.replaceState(null,'','#option='+option+'&state='+state);
+        if (announce) $('#preview-status').textContent = 'Option '+option+'. '+(state==='live'?'Live baseline':state==='viewing'?'Viewing saved pipeline':'Editing pipeline')+'.';
+      }
+      function switchState(next) {
+        state=next; name='Later service transfer'; fromBaseline=false; dirty=next==='editing'; shift=1; feedback=''; render(true);
+      }
+      function openDialog(title,description,body,footer) {
+        previousFocus=document.activeElement;
+        const dialog=$('#action-dialog');
+        dialog.innerHTML='<form id="preview-form"><header class="dialog-head"><h2 id="dialog-title">'+title+'</h2><p>'+description+'</p></header><div class="dialog-body">'+body+'</div><footer class="dialog-actions">'+button('Cancel','close')+footer+'</footer></form>';
+        dialog.showModal();
+      }
+      function closeDialog() { $('#action-dialog').close(); if(previousFocus?.isConnected) previousFocus.focus(); else document.querySelector('input[name="state"]:checked').focus(); }
+      function savedDialog() {
+        openDialog('Saved Pipelines','Choose the live plan or view a saved alternative.','<div class="saved-choice"><div><strong>Autumn pipeline</strong><small>Current baseline · Live pipeline</small></div>'+button('View','choose-live')+'</div><div class="saved-choice"><div><strong>Later service transfer</strong><small>Saved pipeline · 23 October 2026</small></div>'+button('View','choose-saved')+'</div>','');
+      }
+      function saveDialog(copy) {
+        openDialog(copy?'Save pipeline':'Save changes to “'+safe(name)+'”?',copy?'Enter a different name to keep a separate copy.':'This will overwrite the previously saved pipeline. Choose Save as to keep a separate copy.',
+          (copy?'<label for="save-name">Name</label><input id="save-name" name="name" required maxlength="120" value="'+safe(fromBaseline?'':name+' — alternative')+'">':'')+'<label for="save-reason">Reason for saving</label><textarea id="save-reason" name="reason" required rows="3"></textarea>',
+          (copy?'':button('Save as…','save-as'))+'<button type="submit" class="btn primary">'+(copy?'Save':'Overwrite and save')+'</button>');
+        $('#preview-form').addEventListener('submit',event=>{
+          event.preventDefault();
+          const nextName=copy?$('#save-name').value.trim():name;
+          if(copy&&(!nextName||nextName.toLowerCase()===name.toLowerCase())) { $('#save-name').setCustomValidity('Enter a different name.'); $('#save-name').reportValidity(); return; }
+          if(!$('#save-reason').value.trim()) { $('#save-reason').setCustomValidity('Enter a reason for saving.'); $('#save-reason').reportValidity(); return; }
+          name=nextName; dirty=false; fromBaseline=false; feedback='“'+name+'” saved. The live baseline is unchanged.'; closeDialog(); render(true);
+        });
+        $('#save-name')?.addEventListener('input',event=>event.target.setCustomValidity(''));
+        $('#save-reason').addEventListener('input',event=>event.target.setCustomValidity(''));
+      }
+      function editBaseline() {
+        openDialog('Edit this pipeline?','Any changes will be saved under a new name. This baseline will stay unchanged.','<p class="context-line">Autumn pipeline · Current baseline</p>',button('Edit pipeline','confirm-edit',true));
+      }
+      function action(action) {
+        if(action==='close') { closeDialog(); return; }
+        if(action==='live'||action==='choose-live') { if($('#action-dialog').open) closeDialog(); switchState('live'); }
+        else if(action==='saved') savedDialog();
+        else if(action==='choose-saved') { closeDialog(); switchState('viewing'); }
+        else if(action==='edit-baseline') editBaseline();
+        else if(action==='confirm-edit') { closeDialog(); state='editing'; fromBaseline=true; name='Autumn pipeline'; dirty=false; shift=0; feedback=''; render(true); }
+        else if(action==='edit-saved') { state='editing'; dirty=false; feedback=''; render(true); }
+        else if(action==='save'||action==='save-as') { if($('#action-dialog').open) closeDialog(); saveDialog(action==='save-as'||fromBaseline); }
+        else if(action==='adjust') {
+          openDialog('Adjust pipeline','Explore a different date for the Community services procurement.','<label for="adjustment">Move the schedule</label><select id="adjustment"><option value="1">One month later</option><option value="0">Keep the baseline dates</option></select><p class="context-line">Preview example: the actual service date moves with the schedule.</p>',button('Apply adjustment','apply-adjustment',true));
+        }
+        else if(action==='apply-adjustment') { shift=Number($('#adjustment').value); dirty=true; closeDialog(); feedback='Schedule adjusted. Save to keep these changes.'; render(true); }
+        else if(action==='add') {
+          openDialog('Add procurement','This is a visual preview of the page layout.','<p class="context-line">The connected prototype provides the full procurement form.</p>','<a class="btn primary" href="pipeline.html">Open connected prototype</a>');
+        }
+        else if(action.startsWith('details-')) {
+          const index=Number(action.slice(8)), plan=plans[index];
+          const anchorDate=index===0&&state!=='live'?['16 Jun 2031','14 Jul 2031','11 Aug 2031'][Math.min(shift,2)]:plan.anchorDate;
+          openDialog(safe(plan.name),state==='editing'?'Editing this pipeline.':'Read-only schedule details.','<p class="context-line">Phases: Writing bids, Assessment, Mobilisation.</p><p class="context-line">Service begins '+anchorDate+'.</p>',state==='editing'?button('Adjust schedule','open-adjustment',true):'');
+        }
+        else if(action==='open-adjustment') { closeDialog(); actionHandler('adjust'); }
+      }
+      function actionHandler(value) { action(value); }
+      document.addEventListener('click',event=>{
+        const optionButton=event.target.closest('[data-option]');
+        if(optionButton) { option=Number(optionButton.dataset.option); feedback=''; render(true); return; }
+        const trigger=event.target.closest('[data-action]');
+        if(trigger) { event.preventDefault(); actionHandler(trigger.dataset.action); }
+      });
+      document.addEventListener('change',event=>{
+        if(event.target.matches('input[name="state"]')) switchState(event.target.value);
+        if(event.target.id==='viewing-window') { windowSize=event.target.value; const scroll=$('.timeline-scroll'); $('.timeline').style.minWidth=windowSize==='6'?'1600px':''; scroll.scrollLeft=0; }
+      });
+      $('#action-dialog').addEventListener('cancel',event=>{ event.preventDefault(); closeDialog(); });
+      render(false);
+    })();
+  </script>
+</body>
+</html>

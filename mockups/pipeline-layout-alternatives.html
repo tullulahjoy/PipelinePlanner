@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pipeline layout alternatives · LTPP</title>
+  <link rel="stylesheet" href="demo-navigation.css">
+  <style>
+    :root { font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif; font-synthesis:none; color:#17283d; background:#e5eaf1; --blue:#315ed4; --purple:#6b4f86; --line:#dce3ed; --muted:#526780; }
+    * { box-sizing:border-box; }
+    body { margin:0; }
+    button,input,select,textarea { font:inherit; }
+    button,a,input,select,textarea { outline-offset:3px; }
+    :focus-visible { outline:3px solid #315ed4; }
+    a { color:#315ed4; }
+    button { cursor:pointer; }
+    [hidden] { display:none!important; }
+    h1,h2,h3,p { margin-top:0; }
+    p { line-height:1.65; }
+    .review { max-width:1500px; margin:auto; padding:26px 32px 22px; }
+    .review-heading { display:flex; justify-content:space-between; align-items:start; gap:24px; }
+    .review h1 { font-size:25px; letter-spacing:-.5px; margin-bottom:7px; }
+    .review-heading p { max-width:78ch; margin:0; font-size:13px; color:#465b74; }
+    .review-heading > a { flex-shrink:0; font-size:12px; padding-top:7px; }
+    .layout-options { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:20px 0 16px; }
+    .layout-option { border:1px solid #b9c6d8; background:#f6f8fb; color:#17283d; border-radius:7px; padding:13px 16px; text-align:left; line-height:1.5; }
+    .layout-option strong { display:block; font-size:14px; }
+    .layout-option span { display:block; margin-top:3px; color:#526780; font-size:12px; }
+    .layout-option[aria-pressed="true"] { background:#fff; border-color:#315ed4; box-shadow:inset 0 3px #315ed4; }
+    .review-bottom { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+    .state-picker { display:flex; align-items:center; flex-wrap:wrap; gap:7px; margin:0; padding:0; border:0; }
+    .state-picker legend { float:left; padding:8px 10px 8px 0; font-size:12px; font-weight:700; }
+    .state-picker label { position:relative; cursor:pointer; }
+    .state-picker input { position:absolute; opacity:0; width:1px; height:1px; }
+    .state-picker span { display:block; background:#f7f9fc; border:1px solid #bdcadb; border-radius:5px; padding:8px 11px; font-size:12px; }
+    .state-picker input:checked + span { background:#243b57; border-color:#243b57; color:#fff; }
+    .state-picker input:focus-visible + span { outline:3px solid #315ed4; outline-offset:3px; }
+    .preview-note { margin:0; font-size:11px; color:#526780; }
+    .preview-frame { --mode-bg:#eaf1fd; --mode-accent:#315ed4; --mode-ink:#244caa; --mode-line:#cddbf6; max-width:1500px; margin:0 auto 32px; background:#f3f5f8; border:1px solid #bbc8d9; border-radius:8px; min-height:900px; }
+    .preview-frame[data-state="viewing"] { --mode-bg:#eef1f4; --mode-accent:#64748b; --mode-ink:#44546a; --mode-line:#cdd5df; }
+    .preview-frame[data-state="editing"] { --mode-bg:#f2edf8; --mode-accent:#6b4f86; --mode-ink:#584070; --mode-line:#d9cce8; }
+    .preview-frame[data-layout="background"] { background:var(--mode-bg); }
+    .preview-frame > .app-header { display:flex; align-items:center; background:#17283d; color:#fff; border-radius:7px 7px 0 0; padding:16px 28px; gap:28px; }
+    .preview-frame > .app-header small { width:auto; font-size:11px; white-space:nowrap; }
+    .preview-frame .app-brand { flex-shrink:0; }
+    .preview-frame .app-nav button { border:0; color:#dce7f5; background:transparent; padding:11px 14px; border-radius:5px; font-size:13px; }
+    .preview-frame .app-nav button[aria-current="page"] { color:#fff; background:#30465e; font-weight:700; }
+    .preview-frame .app-nav button:hover { color:#fff; background:#30465e; }
+    .page-content { padding:28px; min-width:0; }
+    .page-heading { margin-bottom:20px; }
+    .page-heading h1 { margin:0 0 8px; font-size:29px; line-height:1.25; letter-spacing:-.6px; }
+    .page-heading p { margin:0; font-size:13px; color:#526780; }
+    .context-area { padding:19px 22px 16px; border:1px solid var(--mode-line); border-top:4px solid var(--mode-accent); border-radius:7px; background:var(--mode-bg); }
+    .context-main { display:flex; align-items:center; justify-content:space-between; gap:20px; }
+    .context-copy { min-width:0; }
+    .context-label { color:var(--mode-ink); font-size:12px; font-weight:700; line-height:1.6; }
+    .context-name-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:5px 0 7px; }
+    .context-name-row h2 { margin:0; font-size:24px; line-height:1.3; letter-spacing:-.4px; overflow-wrap:anywhere; }
+    .save-state { color:var(--mode-ink); font-size:12px; font-weight:650; }
+    .context-copy p { max-width:80ch; margin:0; font-size:12px; color:#526780; }
+    .context-actions { display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; flex-shrink:0; max-width:48%; gap:9px; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; border:1px solid #bdcadd; border-radius:5px; background:#fff; color:#243b57; min-height:40px; padding:9px 14px; font-size:12px; font-weight:650; line-height:1.45; text-align:center; text-decoration:none; }
+    .btn:hover { background:#edf2f9; }
+    .btn.primary { background:var(--mode-accent,#315ed4); border-color:var(--mode-accent,#315ed4); color:#fff; }
+    .btn.primary:hover { filter:brightness(.87); }
+    .context-checks { display:flex; align-items:center; justify-content:space-between; gap:12px 24px; flex-wrap:wrap; margin-top:15px; padding-top:13px; border-top:1px solid var(--mode-line); }
+    .context-checks h3 { margin:0; font-size:12px; }
+    .context-checks p { display:inline; margin:0 0 0 9px; font-size:11px; color:#526780; }
+    .check-counts { display:flex; align-items:center; flex-wrap:wrap; gap:9px; font-size:12px; }
+    .badge { display:inline-block; border:1px solid #e4b7be; border-radius:4px; color:#a52f40; background:#fff0f2; padding:4px 8px; font-size:11px; font-weight:700; line-height:1.6; white-space:nowrap; }
+    .badge.warning { border-color:#e4c88b; background:#fff6df; color:#7d5106; }
+    .preview-frame[data-layout="background"] .context-area { padding:0 0 19px; background:transparent; border:0; border-bottom:1px solid var(--mode-line); border-radius:0; }
+    .preview-frame[data-layout="background"] .context-checks { border-top:0; padding-top:0; margin-top:16px; }
+    .card { margin-top:22px; border:1px solid #dce3ed; border-radius:8px; background:#fff; min-width:0; overflow:hidden; }
+    .card-head { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; padding:18px 22px; border-bottom:1px solid #e4e9f1; }
+    .card-head h2 { margin:0; font-size:18px; }
+    .card-head p { margin:5px 0 0; color:#526780; font-size:12px; }
+    .timeline-card { overflow:visible; }
+    .timeline-toolbar { position:sticky; top:0; z-index:5; border-radius:7px 7px 0 0; background:#fff; }
+    .toolbar-controls,.view-controls,.edit-actions { display:flex; align-items:flex-end; flex-wrap:wrap; gap:10px; }
+    .toolbar-controls { gap:18px; }
+    .view-controls label { display:flex; flex-direction:column; gap:6px; font-size:11px; font-weight:650; }
+    select,input { min-height:38px; max-width:100%; padding:7px 10px; border:1px solid #bdcadd; border-radius:5px; background:#fff; color:#243b57; font-size:12px; }
+    .view-controls .btn { min-width:39px; padding:8px 11px; }
+    .edit-actions .btn { background:#6b4f86; border-color:#6b4f86; color:#fff; }
+    .edit-actions .btn:hover { background:#584070; border-color:#584070; }
+    .edit-actions svg { width:16px; height:16px; flex-shrink:0; }
+    .timeline-scroll { overflow:auto; max-height:620px; position:relative; }
+    .timeline { min-width:1000px; }
+    .timeline-row { display:grid; grid-template-columns:225px minmax(0,1fr); min-height:96px; border-bottom:1px solid #e5eaf2; }
+    .timeline-row:last-child { border-bottom:0; }
+    .timeline-label { position:sticky; left:0; z-index:2; padding:17px 16px; background:#fff; border-right:1px solid #dce3ed; font-size:12px; line-height:1.6; }
+    .timeline-label a { font-weight:700; }
+    .timeline-label small { display:block; margin-top:5px; color:#526780; font-size:11px; }
+    .timeline-row.months { min-height:42px; }
+    .months .timeline-label { padding:12px 16px; background:#f7f9fc; font-size:11px; font-weight:700; }
+    .month-track { display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); background:#f7f9fc; }
+    .month-track span { padding:13px 5px; border-left:1px solid #e4e9f1; color:#526780; font-size:10px; white-space:nowrap; }
+    .track { position:relative; overflow:hidden; background:repeating-linear-gradient(to right,#e9edf4 0 1px,transparent 1px calc(100% / 52)); }
+    .phase { position:absolute; top:29px; height:26px; border-radius:2px; border:0; padding:0 6px; font-size:10px; color:#fff; background:var(--phase); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:left; }
+    .phase:focus-visible { z-index:3; outline-offset:1px; }
+    .clash { position:absolute; top:23px; height:38px; border:2px solid #b43d4e; border-radius:4px; pointer-events:none; }
+    .clash.warning { border-style:dashed; border-color:#b38a00; }
+    .milestone { position:absolute; top:16px; height:58px; border-left:2px solid #243b57; }
+    .milestone::before { content:"◆"; position:absolute; left:-6px; top:-7px; font-size:11px; color:#243b57; }
+    .milestone span { position:absolute; left:5px; top:43px; white-space:nowrap; font-size:9px; color:#526780; }
+    .legend { display:flex; flex-wrap:wrap; gap:12px 20px; padding:13px 22px; border-top:1px solid #e4e9f1; border-radius:0 0 7px 7px; background:#fafbfd; color:#526780; font-size:11px; }
+    .legend span { display:inline-flex; align-items:center; gap:6px; }
+    .legend i { width:15px; height:10px; display:inline-block; background:var(--phase); border-radius:1px; }
+    .legend .outline { height:12px; background:transparent; border:2px solid #b43d4e; }
+    .table-scroll { overflow:auto; }
+    table { border-collapse:collapse; width:100%; min-width:720px; font-size:12px; text-align:left; }
+    th,td { padding:14px 22px; border-bottom:1px solid #e5eaf2; line-height:1.6; vertical-align:top; }
+    th { color:#526780; background:#fafbfd; font-size:11px; }
+    td small { display:block; color:#526780; margin-top:3px; font-size:11px; }
+    tr:last-child td { border-bottom:0; }
+    .page-footer { margin:22px 0 0; color:#526780; font-size:11px; }
+    .review-caption { max-width:1500px; margin:0 auto 28px; padding:0 32px; font-size:12px; line-height:1.7; color:#465b74; }
+    dialog { width:min(580px,calc(100vw - 32px)); max-height:calc(100vh - 40px); padding:0; overflow:auto; border:1px solid #bdcadd; border-radius:8px; background:#fff; color:#17283d; }
+    dialog::backdrop { background:#17283d88; }
+    .dialog-head { display:flex; align-items:start; justify-content:space-between; gap:16px; padding:22px 24px 18px; border-bottom:1px solid #e4e9f1; }
+    .dialog-head h2 { font-size:20px; margin:0 0 7px; }
+    .dialog-head p { font-size:12px; margin:0; color:#526780; }
+    .dialog-head .btn { min-width:36px; min-height:36px; padding:4px; font-size:20px; }
+    .dialog-body { padding:20px 24px; }
+    .dialog-body p { font-size:13px; }
+    .dialog-body label { display:block; margin-bottom:7px; font-size:12px; font-weight:650; }
+    .dialog-body input,.dialog-body textarea { width:100%; margin-bottom:17px; }
+    .dialog-body textarea { padding:10px; border:1px solid #bdcadd; border-radius:5px; font-size:12px; resize:vertical; }
+    .dialog-actions { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:9px; padding:16px 24px; border-top:1px solid #e4e9f1; }
+    .dialog-pipelines { padding:0; margin:0; list-style:none; }
+    .dialog-pipelines li { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; padding:15px 0; border-bottom:1px solid #e4e9f1; }
+    .dialog-pipelines li:first-child { padding-top:0; }
+    .dialog-pipelines li:last-child { border-bottom:0; padding-bottom:0; }
+    .dialog-pipelines strong { font-size:13px; }
+    .dialog-pipelines small { display:block; font-size:11px; margin-top:4px; color:#526780; }
+    .dialog-pipelines .actions { display:flex; flex-wrap:wrap; gap:6px; }
+    .dialog-error { color:#a52f40; font-size:12px; }
+    .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    @media (max-width:1100px) {
+      .context-main { align-items:start; }
+      .context-actions { max-width:43%; }
+      .preview-frame > .app-header { flex-wrap:wrap; gap:14px; }
+      .preview-frame > .app-header small { margin-left:auto; }
+    }
+    @media (max-width:760px) {
+      .review { padding:22px 16px 18px; }
+      .review-heading { flex-direction:column; gap:10px; }
+      .review-heading > a { padding:0; }
+      .layout-options { gap:8px; }
+      .layout-option { padding:12px; }
+      .layout-option strong { font-size:12px; }
+      .layout-option span { font-size:11px; }
+      .state-picker legend { float:none; padding:0 0 8px; }
+      .state-picker span { font-size:11px; padding:8px 10px; }
+      .preview-frame { border-radius:0; border-inline:0; }
+      .preview-frame > .app-header { padding:16px; border-radius:0; }
+      .preview-frame .app-nav { order:3; width:100%; }
+      .preview-frame .app-nav button { padding:9px 11px; font-size:12px; }
+      .preview-frame > .app-header small { font-size:10px; }
+      .page-content { padding:24px 16px; }
+      .page-heading h1 { font-size:25px; }
+      .context-area { padding:16px; }
+      .context-main { flex-direction:column; gap:15px; }
+      .context-name-row h2 { font-size:22px; }
+      .context-actions { max-width:100%; justify-content:flex-start; }
+      .context-checks { gap:10px; }
+      .context-checks p { display:block; margin:4px 0 0; }
+      .context-checks h3 { display:inline; }
+      .card-head { padding:16px; }
+      .toolbar-controls { width:100%; gap:14px; }
+      .view-controls { width:100%; gap:8px; }
+      .view-controls label { flex:1; min-width:105px; }
+      .view-controls input { width:100%; }
+      .timeline-row { grid-template-columns:180px minmax(0,1fr); }
+      .legend { padding:13px 16px; gap:10px 15px; }
+      .review-caption { padding:0 16px; }
+      .dialog-body,.dialog-head { padding:18px; }
+      .dialog-actions { padding:14px 18px; }
+    }
+  </style>
+</head>
+<body>
+  <section class="review" aria-labelledby="review-title">
+    <div class="review-heading"><div><h1 id="review-title">Pipeline layout alternatives</h1><p>Two ways to give the schedule the full page width. The context stays below the page heading and above the timeline.</p></div><a href="pipeline.html">Open connected prototype</a></div>
+    <div class="layout-options" role="group" aria-label="Choose a layout">
+      <button class="layout-option" type="button" data-layout="bar" aria-pressed="true"><strong>1. Horizontal context bar</strong><span>A coloured bar brings the pipeline name, actions and checks together.</span></button>
+      <button class="layout-option" type="button" data-layout="background" aria-pressed="false"><strong>2. Page background colour</strong><span>The page colour identifies the state; the context sits directly on it.</span></button>
+    </div>
+    <div class="review-bottom"><fieldset class="state-picker"><legend>Preview state</legend><label><input type="radio" name="state" value="live" checked><span>Live baseline</span></label><label><input type="radio" name="state" value="viewing"><span>Viewing saved pipeline</span></label><label><input type="radio" name="state" value="editing"><span>Editing pipeline</span></label></fieldset><p class="preview-note">Visual preview only. Illustrative schedules; your saved data is untouched.</p></div>
+  </section>
+  <div id="preview" class="preview-frame" data-layout="bar" data-state="live"></div>
+  <p id="review-caption" class="review-caption"></p>
+  <p id="announcement" class="sr-only" role="status" aria-live="polite"></p>
+  <dialog id="preview-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-description">
+    <form id="dialog-form">
+      <header class="dialog-head"><div><h2 id="dialog-title" tabindex="-1"></h2><p id="dialog-description"></p></div><button class="btn" type="button" data-dialog-close aria-label="Close dialog">×</button></header>
+      <div id="dialog-body" class="dialog-body"></div>
+      <footer id="dialog-actions" class="dialog-actions"></footer>
+    </form>
+  </dialog>
+  <script>
+    (() => {
+      'use strict';
+      const $ = id => document.getElementById(id);
+      const escape = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+      const phaseTypes = [{name:'Writing bids',colour:'#5077a0'},{name:'Evaluation',colour:'#315ed4'},{name:'Moderation',colour:'#bc4c16'},{name:'Mobilisation',colour:'#17766e'}];
+      const initialPlans = [
+        {name:'Community services procurement',start:0,bids:1,evaluation:4,moderation:5.5,mobilisation:6.5,anchor:9.5,anchorDate:'16 Jun 2031',startDate:'4 Nov 2030'},
+        {name:'Digital services procurement',start:1,bids:2,evaluation:4.5,moderation:6,mobilisation:7,anchor:10,anchorDate:'30 Jun 2031',startDate:'2 Dec 2030'},
+        {name:'Facilities support procurement',start:0,bids:0,evaluation:2,moderation:3,mobilisation:4,anchor:8,anchorDate:'5 May 2031',startDate:'2 Sept 2030'}
+      ];
+      let plans = initialPlans.map(plan => ({...plan}));
+      let layout = 'bar', state = 'live', liveName = 'Autumn pipeline', name = 'Later service transfer';
+      let dirty = true, fromBaseline = false, windowMonths = 12, windowStart = '2030-09-02', opener = null;
+      function readHash() {
+        const params = new URLSearchParams(location.hash.slice(1));
+        layout = params.get('layout') === 'background' ? 'background' : 'bar';
+        state = ['live','viewing','editing'].includes(params.get('state')) ? params.get('state') : 'live';
+      }
+      function updateHash() { history.replaceState(null,'','#layout='+layout+'&state='+state); }
+      const action = (text,key,primary=false) => '<button class="btn'+(primary?' primary':'')+'" type="button" data-action="'+key+'">'+text+'</button>';
+      function contextActions() {
+        if(state==='live') return action('Edit this pipeline','edit',true)+action('Saved Pipelines','saved');
+        if(state==='viewing') return action('Edit this pipeline','edit',true)+action('Return to live pipeline','live');
+        return action(fromBaseline?'Save as…':'Save','save',true)+(fromBaseline?'':action('Save as…','save-as'))+action('Confirm as new baseline','baseline')+action('Return to live pipeline','live');
+      }
+      function context() {
+        const label = state==='live'?'Current baseline · Live pipeline':state==='viewing'?'Viewing saved pipeline':'Editing pipeline';
+        const progress = state!=='editing'?'Read-only':dirty?'Unsaved changes':fromBaseline?'No changes yet':'All changes saved';
+        const description = state==='live'?'The fixed plan for day-to-day activity. Changes are saved separately under a new name.':state==='viewing'?'Inspect these saved contents without changing them.':fromBaseline?'Save any changes under a new name. The baseline stays unchanged.':'Make changes to this saved pipeline, or use Save as to keep another alternative.';
+        return '<section class="context-area" aria-labelledby="pipeline-name"><div class="context-main"><div class="context-copy"><span class="context-label">'+label+'</span><div class="context-name-row"><h2 id="pipeline-name">'+escape(state==='live'?liveName:name)+'</h2><span class="save-state">'+progress+'</span></div><p>'+description+'</p></div><div class="context-actions">'+contextActions()+'</div></div><div class="context-checks"><div><h3>Pipeline checks</h3><p>Across the whole pipeline, including dates outside the viewing window.</p></div><div class="check-counts"><span class="badge">1 critical clash</span><span class="badge warning">1 warning</span><a href="#preview-findings" data-action="findings">Review findings</a></div></div></section>';
+      }
+      function phase(type,start,length,planIndex,offset) {
+        const first=Math.max(0,start-offset),last=Math.min(12,start+length-offset);
+        if(last<=first)return '';
+        return '<button class="phase" type="button" data-action="phase" data-plan="'+planIndex+'" data-phase="'+type+'" style="--phase:'+phaseTypes[type].colour+';left:'+first/12*100+'%;width:'+(last-first)/12*100+'%" aria-label="'+escape(plans[planIndex].name+': '+phaseTypes[type].name)+'">'+phaseTypes[type].name+'</button>';
+      }
+      function timeline() {
+        const date = new Date(windowStart+'T00:00:00Z');
+        const offset=(date.getUTCFullYear()-2030)*12+date.getUTCMonth()-8+(date.getUTCDate()-2)/30.4375;
+        const months = Array.from({length:12},(_,index) => new Intl.DateTimeFormat('en-GB',{month:'short',year:'2-digit',timeZone:'UTC'}).format(new Date(Date.UTC(date.getUTCFullYear(),date.getUTCMonth()+index,1))));
+        const rows = plans.map((plan,index) => '<div class="timeline-row"><div class="timeline-label"><a href="#" data-action="details" data-plan="'+index+'">'+escape(plan.name)+'</a><small>Service begins '+plan.anchorDate+'</small></div><div class="track">'+phase(0,plan.bids,2,index,offset)+phase(1,plan.evaluation,2,index,offset)+phase(2,plan.moderation,1,index,offset)+phase(3,plan.mobilisation,Math.min(12-plan.mobilisation,4),index,offset)+(index<2?'<span class="clash" style="left:'+(6-offset)/12*100+'%;width:4.2%"></span><span class="clash warning" style="left:'+(4.5-offset)/12*100+'%;width:8.3%"></span>':'')+'<span class="milestone" style="left:'+(plan.anchor-offset)/12*100+'%"><span>Service begins</span></span></div></div>').join('');
+        const editing = state==='editing'?'<div class="edit-actions"><button class="btn" type="button" data-action="adjust"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M3 6h4m4 0h10M3 12h10m4 0h4M3 18h4m4 0h10"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="18" r="2"/></svg>Adjust pipeline</button>'+action('+ Add procurement','add')+'</div>':'';
+        return '<section class="card timeline-card" aria-labelledby="timeline-title"><div class="card-head timeline-toolbar"><h2 id="timeline-title">Pipeline timeline</h2><div class="toolbar-controls"><div class="view-controls"><button class="btn" type="button" data-action="previous" aria-label="Previous viewing window">←</button><label>Viewing window<select id="viewing-window"><option value="12">One year</option><option value="6">Six months</option></select></label><label>Window starts<input type="date" id="window-start" value="'+windowStart+'"></label><button class="btn" type="button" data-action="next" aria-label="Next viewing window">→</button></div>'+editing+'</div></div><div class="timeline-scroll" tabindex="0" role="region" aria-label="Scrollable procurement pipeline"><div class="timeline" style="min-width:'+(windowMonths===6?'1900':'1000')+'px"><div class="timeline-row months"><div class="timeline-label">Procurement</div><div class="month-track">'+months.map(month=>'<span>'+month+'</span>').join('')+'</div></div>'+rows+'</div></div><div class="legend">'+phaseTypes.map(type=>'<span><i style="--phase:'+type.colour+'"></i>'+type.name+'</span>').join('')+'<span>◆ Milestone / anchor</span><span><i class="outline"></i>Critical clash</span></div></section>';
+      }
+      function findings() {
+        return '<section class="card" id="preview-findings" aria-labelledby="findings-title"><div class="card-head"><div><h2 id="findings-title" tabindex="-1">Warnings and critical clashes</h2><p>Across the whole pipeline</p></div></div><div class="table-scroll" tabindex="0" role="region" aria-label="Overlap findings"><table><thead><tr><th scope="col">Severity</th><th scope="col">Phase</th><th scope="col">Procurements involved</th><th scope="col">Overlap</th></tr></thead><tbody><tr><td><span class="badge">Critical clash</span></td><td>Moderation</td><td>Community services procurement<br>Digital services procurement</td><td>3–16 March 2031<small>2 active weeks</small></td></tr><tr><td><span class="badge warning">Warning</span></td><td>Evaluation</td><td>Community services procurement<br>Digital services procurement</td><td>20 January–2 March 2031<small>6 active weeks</small></td></tr></tbody></table></div></section>';
+      }
+      function procurements() {
+        return '<section class="card" aria-labelledby="procurements-title"><div class="card-head"><h2 id="procurements-title">Procurements ('+plans.length+')</h2></div><div class="table-scroll" tabindex="0" role="region" aria-label="Procurement dates"><table><thead><tr><th scope="col">Procurement</th><th scope="col">Planning start</th><th scope="col">Service begins</th><th scope="col">Action</th></tr></thead><tbody>'+plans.map((plan,index)=>'<tr><td><strong>'+escape(plan.name)+'</strong></td><td>'+plan.startDate+'</td><td>'+plan.anchorDate+'</td><td><button class="btn" type="button" data-action="details" data-plan="'+index+'">'+(state==='editing'?'Edit':'View details')+'</button></td></tr>').join('')+'</tbody></table></div></section>';
+      }
+      function render(announce=true) {
+        const preview = $('preview'), focused = preview.contains(document.activeElement)?document.activeElement.dataset.action:null;
+        preview.dataset.layout=layout; preview.dataset.state=state;
+        const title=state==='live'?'Your procurement pipeline':state==='viewing'?'Viewing saved pipeline':'Editing pipeline';
+        const subtitle=state==='live'?'Follow the live plan, or explore a different way forward.':state==='viewing'?'View saved contents, or start editing.':'Explore changes while keeping the live baseline fixed.';
+        preview.innerHTML='<header class="app-header"><a class="app-brand" href="#" data-action="live"><span>LTPP</span><span class="app-brand-description">Long-term pipeline plan</span></a><nav class="app-nav" aria-label="Preview navigation"><button type="button" data-action="live" aria-current="page">Pipeline</button><a href="templates-and-phase-library.html">Library</a><button type="button" data-action="saved">Saved Pipelines</button><a href="how-it-works.html">How it works</a></nav><small>Local prototype · Fictional data</small></header><main class="page-content"><div class="page-heading"><h1 id="page-title" tabindex="-1">'+title+'</h1><p>'+subtitle+'</p></div>'+context()+timeline()+findings()+procurements()+'<p class="page-footer">Manage reusable phases and procurement templates in the Library.</p></main>';
+        $('viewing-window').value=String(windowMonths);
+        document.querySelectorAll('.layout-option').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.layout===layout)));
+        document.querySelectorAll('input[name="state"]').forEach(input=>input.checked=input.value===state);
+        $('review-caption').textContent=layout==='bar'?'The horizontal bar keeps the current context together without taking width from the schedule. State colour is confined to the bar.':'The background colour carries the state across the page. The pipeline context remains below the heading, while white schedule and findings cards stay easy to read.';
+        if(focused) (preview.querySelector('[data-action="'+focused+'"]')||$('page-title')).focus({preventScroll:true});
+        if(announce) $('announcement').textContent=(layout==='bar'?'Horizontal context bar':'Page background colour')+'. '+title+'.';
+      }
+      function switchState(next) { state=next; updateHash(); render(); }
+      function openDialog(kind,title,description,body,buttons) {
+        opener=document.activeElement;
+        const dialog=$('preview-dialog'); dialog.dataset.kind=kind;
+        $('dialog-title').textContent=title; $('dialog-description').textContent=description;
+        $('dialog-body').innerHTML=body; $('dialog-actions').innerHTML='<button class="btn" type="button" data-dialog-close>Cancel</button>'+buttons;
+        dialog.showModal(); (dialog.querySelector('input:not([type="hidden"])')||$('dialog-title')).focus();
+      }
+      function closeDialog() {
+        $('preview-dialog').close();
+        const replacement=opener?.dataset.action?$('preview').querySelector('[data-action="'+opener.dataset.action+'"]'):null;
+        const destination=opener?.isConnected?opener:replacement||$('page-title'); destination?.focus({preventScroll:true});
+      }
+      function saveDialog(copy=false) {
+        const needsName=copy||fromBaseline;
+        openDialog(needsName?'save-as':'save',needsName?'Save pipeline under a new name':'Save changes to “'+name+'”?','This saves only the visual preview. The live baseline stays unchanged.',(needsName?'<label for="preview-name">Name</label><input id="preview-name" required maxlength="120" value="'+escape(copy?'':name)+'">':'<p>This will overwrite the saved contents of this preview pipeline. Use Save as to keep a separate copy.</p>')+'<label for="preview-reason">Reason for saving</label><textarea id="preview-reason" required maxlength="2000" rows="3"></textarea><p id="dialog-error" class="dialog-error" role="alert"></p>','<button class="btn primary" type="submit">'+(needsName?'Save':'Overwrite and save')+'</button>');
+      }
+      function savedDialog() {
+        const records=[{name:liveName,current:true},{name:'Later service transfer',current:false},{name:'Earlier service transfer',current:false}];
+        openDialog('saved','Saved Pipelines','Choose a pipeline to preview. These controls do not load your browser’s saved records.','<ul class="dialog-pipelines">'+records.map((record,index)=>'<li><div><strong>'+escape(record.name)+'</strong><small>'+(record.current?'Current baseline · Live pipeline':'Saved pipeline')+'</small></div><div class="actions"><button class="btn" type="button" data-record="'+index+'" data-record-action="view">View</button><button class="btn" type="button" data-record="'+index+'" data-record-action="edit">Edit</button><button class="btn" type="button" data-record="'+index+'" data-record-action="compare">Compare</button></div></li>').join('')+'</ul>','');
+      }
+      $('preview').addEventListener('click',event=>{
+        const button=event.target.closest('[data-action]'); if(!button)return; event.preventDefault();
+        const key=button.dataset.action;
+        if(key==='findings') { $('findings-title').focus({preventScroll:true}); $('preview-findings').scrollIntoView({block:'start'}); }
+        else if(key==='edit') {
+          if(state==='live') openDialog('edit','Edit this pipeline?','Any changes will be saved under a new name. This baseline stays fixed.','<p>Start exploring changes to <strong>'+escape(liveName)+'</strong>.</p>','<button class="btn primary" type="submit">Edit pipeline</button>');
+          else { fromBaseline=false; dirty=false; switchState('editing'); }
+        }
+        else if(key==='live') {
+          if(state==='editing'&&dirty) openDialog('return','Return to the live pipeline?','There are unsaved changes in this visual preview.','<p>Return to <strong>'+escape(liveName)+'</strong>?</p>','<button class="btn" type="button" data-dialog-save>Save first</button><button class="btn primary" type="submit">Discard changes and return</button>');
+          else switchState('live');
+        }
+        else if(key==='saved') savedDialog();
+        else if(key==='save'||key==='save-as') saveDialog(key==='save-as');
+        else if(key==='baseline') openDialog('baseline','Confirm as new baseline','This changes only which pipeline is shown as live in this visual preview.','<p><strong>'+escape(name)+'</strong> will be shown as the fixed live pipeline.</p><label for="preview-rationale">Rationale (optional)</label><textarea id="preview-rationale" rows="3" maxlength="2000"></textarea>','<button class="btn primary" type="submit">Confirm baseline</button>');
+        else if(key==='add') openDialog('add','Add procurement','Add an illustrative row to this preview.','<label for="preview-procurement-name">Procurement name</label><input id="preview-procurement-name" required maxlength="150">','<button class="btn primary" type="submit">Add procurement</button>');
+        else if(key==='adjust') openDialog('adjust','Adjust pipeline','The connected prototype contains the full adjustment workspace.','<p>The layout keeps <strong>Adjust pipeline</strong> beside <strong>Add procurement</strong> while editing.</p><p><a href="pipeline.html">Open the connected prototype</a> to try schedule adjustments.</p>','');
+        else if(key==='phase'||key==='details') {
+          const plan=plans[Number(button.dataset.plan)];
+          openDialog('details',plan.name,state==='editing'?'Editing pipeline':'Read-only saved contents','<p>'+(key==='phase'?escape(phaseTypes[Number(button.dataset.phase)].name)+'. ':'')+'Service begins '+plan.anchorDate+'.</p><p>Use the connected prototype for the full procurement details and date controls.</p>','');
+        }
+        else if(key==='previous'||key==='next') {
+          const date=new Date(windowStart+'T00:00:00Z'); date.setUTCMonth(date.getUTCMonth()+(key==='previous'?-windowMonths:windowMonths)); windowStart=date.toISOString().slice(0,10); render();
+        }
+      });
+      $('preview').addEventListener('change',event=>{
+        if(event.target.id==='viewing-window') { windowMonths=Number(event.target.value); render(false); $('viewing-window').focus({preventScroll:true}); }
+        if(event.target.id==='window-start'&&event.target.value) { windowStart=event.target.value; render(false); $('window-start').focus({preventScroll:true}); }
+      });
+      document.querySelectorAll('.layout-option').forEach(button=>button.addEventListener('click',()=>{layout=button.dataset.layout;updateHash();render();}));
+      document.querySelectorAll('input[name="state"]').forEach(input=>input.addEventListener('change',()=>{fromBaseline=false;state=input.value;updateHash();render();}));
+      $('preview-dialog').addEventListener('cancel',event=>{event.preventDefault();closeDialog();});
+      $('preview-dialog').addEventListener('click',event=>{
+        if(event.target.closest('[data-dialog-close]')) closeDialog();
+        if(event.target.closest('[data-dialog-save]')) { closeDialog();saveDialog(); }
+        const choice=event.target.closest('[data-record-action]'); if(!choice)return;
+        const index=Number(choice.dataset.record), chosen=[liveName,'Later service transfer','Earlier service transfer'][index];
+        closeDialog();
+        if(choice.dataset.recordAction==='compare') openDialog('compare','Compare pipelines','This is a layout preview.','<p><strong>'+escape(chosen)+'</strong> compared with <strong>'+escape(index===0?'Later service transfer':liveName)+'</strong>.</p><p>The connected Saved Pipelines page provides the full schedule and overlap comparison.</p>','');
+        else {name=chosen;fromBaseline=index===0;dirty=false;switchState(choice.dataset.recordAction==='view'?(index===0?'live':'viewing'):'editing');}
+      });
+      $('dialog-form').addEventListener('submit',event=>{
+        event.preventDefault();const kind=$('preview-dialog').dataset.kind;
+        if(kind==='edit') {name=liveName;fromBaseline=true;dirty=false;closeDialog();switchState('editing');}
+        else if(kind==='save'||kind==='save-as') {
+          const input=$('preview-name'), next=input?input.value.trim():name;
+          if(input&&(!next||next.toLocaleLowerCase()===name.toLocaleLowerCase())) {$('dialog-error').textContent='Choose a different name for the separate pipeline.';input.focus();return;}
+          name=next;dirty=false;fromBaseline=false;closeDialog();render();
+        }
+        else if(kind==='return') {dirty=false;plans=initialPlans.map(plan=>({...plan}));closeDialog();switchState('live');}
+        else if(kind==='baseline') {liveName=name;dirty=false;fromBaseline=false;closeDialog();switchState('live');}
+        else if(kind==='add') {plans.push({...initialPlans[2],name:$('preview-procurement-name').value.trim()});dirty=true;closeDialog();render();}
+      });
+      window.addEventListener('hashchange',()=>{readHash();render();});
+      readHash();render(false);
+    })();
+  </script>
+</body>
+</html>

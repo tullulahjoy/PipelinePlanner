@@ -1,0 +1,24 @@
+.findings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr)); gap: 16px; padding: 0; margin: 0; list-style: none; }
+.findings-grid > .finding-card { --finding-border: #e4c88b; --finding-accent: #a56d0d; display: flex; flex-direction: column; min-width: 0; border: 1px solid var(--finding-border); border-left: 5px solid var(--finding-accent); border-radius: 6px; background: #fff6df; padding: 16px 18px; overflow-wrap: anywhere; font-size: 13px; line-height: 1.6; }
+.findings-grid > .finding-card.critical { --finding-border: #e4b7be; --finding-accent: #a52f40; background: #fff0f2; }
+.findings-grid > .finding-card.resolved { --finding-border: #beddd1; --finding-accent: #33806a; background: #edf8f3; }
+.finding-card > .severity-badge { align-self: flex-start; margin-bottom: 8px; }
+.finding-card .severity-badge { display: inline-block; border: 1px solid #e4c88b; border-radius: 5px; background: #fff6df; color: #7d5106; padding: 5px 9px; font-weight: 700; font-size: 12px; line-height: 1.6; }
+.finding-card .severity-badge.critical { border-color: #e4b7be; background: #fff0f2; color: #a52f40; }
+.finding-card .finding-card-labels { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 7px; margin-bottom: 8px; }
+.finding-card .finding-card-status { border: 1px solid #cbd5e1; border-radius: 5px; background: #fff; color: #344a64; padding: 5px 8px; font-size: 11px; font-weight: 650; line-height: 1.7; }
+.finding-card.resolved .finding-card-status { border-color: #beddd1; background: #eaf6f1; color: #236957; }
+.finding-card .finding-phase { margin: 0 0 9px; color: #17283d; font-size: 16px; line-height: 1.5; }
+.finding-card .finding-field-label { margin: 0 0 4px; font-weight: 650; }
+.finding-card .finding-participants { padding-left: 18px; margin: 0 0 16px; list-style: disc; }
+.finding-card .finding-participant + .finding-participant { margin-top: 5px; }
+.finding-card .finding-participant > a, .finding-card .finding-participant > strong { font-weight: 650; }
+.finding-card .finding-participant small { display: block; color: #52647b; font-size: 12px; line-height: 1.5; }
+.finding-card .finding-overlap { margin-top: auto; padding-top: 11px; border-top: 1px solid var(--finding-border); }
+.finding-card .finding-overlap p { margin: 0; }
+.finding-card .finding-overlap .finding-duration, .finding-card .finding-note { margin: 4px 0 0; color: #52647b; font-size: 12px; line-height: 1.6; }
+.finding-card .finding-comparison-values { display: grid; gap: 12px; }
+.finding-card .finding-comparison-values > section + section { padding-top: 12px; border-top: 1px solid var(--finding-border); }
+.finding-card .finding-comparison-values h4 { margin: 0 0 6px; font-size: 12px; line-height: 1.6; }
+.finding-card .finding-comparison-values .finding-value > span, .finding-card .finding-comparison-values .finding-value > small { display: block; }
+.finding-card .finding-comparison-values .finding-value > .finding-severity { display: inline-block; margin-bottom: 4px; }

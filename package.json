@@ -1,0 +1,31 @@
+{
+  "name": "react-empty-project-template",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@dnd-kit/abstract": "0.5.3",
+    "@dnd-kit/dom": "0.5.3",
+    "@dnd-kit/react": "0.5.3",
+    "dayjs": "1.11.10",
+    "interactjs": "1.10.27",
+    "react": "^19.3.1",
+    "react-calendar-timeline": "0.30.0-beta.19",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "oxlint": "^1.88.0",
+    "typescript": "~6.0.3",
+    "vite": "^8.3.4"
+  }
+}

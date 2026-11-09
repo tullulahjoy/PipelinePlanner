@@ -1,0 +1,203 @@
+.versions-page { margin: 0; background: #f3f5f8; color: #17283d; font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif; font-synthesis: none; }
+.versions-page .comparison-findings { padding: 0 22px 22px; }
+.findings-matrix { container-type: inline-size; overflow-wrap: anywhere; }
+.findings-matrix-head, .findings-matrix-row { display: grid; grid-template-columns: minmax(0, 1.15fr) repeat(2, minmax(0, 1fr)); }
+.findings-matrix-head { background: #f5f7fa; border: 1px solid #dce3ed; font-size: 13px; font-weight: 700; }
+.findings-matrix-head > div, .findings-matrix-row > div { padding: 16px; min-width: 0; }
+.findings-matrix-row { border: 1px solid #dce3ed; border-top: 0; border-left: 4px solid #a66b08; font-size: 13px; line-height: 1.6; }
+.findings-matrix-row.critical { border-left-color: #a82c45; }
+.findings-matrix-row.resolved { border-left-color: #22745d; }
+.findings-matrix-row > div + div { border-left: 1px solid #dce3ed; }
+.findings-matrix-row .matrix-value.warning { background: #fff6df; }
+.findings-matrix-row .matrix-value.critical { background: #fff0f2; }
+.findings-matrix-row.resolved .matrix-value { background: #edf8f4; }
+.matrix-absent { background: #fafbfd; }
+.matrix-labels { display: flex; align-items: start; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.matrix-participants { margin: 10px 0 0; padding-left: 17px; }
+.matrix-participants li + li { margin-top: 6px; }
+.matrix-participants small, .findings-matrix .finding-value > span, .findings-matrix .finding-value > small { display: block; }
+.findings-matrix .finding-value > .finding-severity { display: inline-block; margin-bottom: 8px; }
+.findings-matrix .finding-value > small { margin-top: 6px; color: #526780; }
+.findings-matrix .finding-note { margin: 8px 0 0; font-size: 12px; }
+.matrix-mobile-label { display: none; }
+@container (max-width: 640px) {
+  .findings-matrix-head { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); }
+  .findings-matrix-row { grid-template-columns: minmax(0, 1fr); margin-bottom: 12px; border-top: 1px solid #dce3ed; }
+  .findings-matrix-row > div + div { border-left: 0; border-top: 1px solid #dce3ed; }
+  .matrix-mobile-label { display: block; font-weight: 700; font-size: 12px; margin-bottom: 10px; }
+}
+.versions-page .schedule-comparison-table { min-width: 1000px; }
+.versions-page .comparison-movement { font-weight: 650; }
+.versions-page .schedule-comparison-table th:nth-child(n) { width: 19%; }
+.versions-page .schedule-comparison-table th:first-child { width: 24%; }
+:where(.versions-page) * { box-sizing: border-box; }
+:where(.versions-page) button, :where(.versions-page) select { font: inherit; }
+:where(.versions-page) a { color: #315ed4; }
+:where(.versions-page) :focus-visible { outline: 3px solid #315ed4; outline-offset: 3px; }
+:where(.versions-page) .versions-main { max-width: 1400px; margin: auto; padding: 30px 32px 48px; }
+:where(.versions-page) .versions-main:has(> .pipeline-layout) { max-width: 1500px; }
+.pipeline-context-panel[data-state="viewing"] .context-actions > button.btn:first-child { background: #52647b; border-color: #52647b; color: #fff; }
+.pipeline-context-panel[data-state="viewing"] .context-actions > button.btn:first-child:hover { background: #3f5168; border-color: #3f5168; }
+:where(.versions-page) h1 { margin: 6px 0 10px; font-size: 30px; letter-spacing: -.6px; }
+:where(.versions-page) h2 { margin: 0; font-size: 18px; }
+:where(.versions-page) h3 { margin: 0; font-size: 15px; }
+:where(.versions-page) p { line-height: 1.65; }
+:where(.versions-page) .version-page-heading > p { margin: 0; color: #5c6e85; font-size: 14px; }
+:where(.versions-page) .version-heading-row { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+:where(.versions-page) .version-heading-row > .version-page-heading { min-width: 0; overflow-wrap: anywhere; }
+:where(.versions-page) .version-heading-row > .btn { flex-shrink: 0; }
+:where(.versions-page) .baseline-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; list-style: none; padding: 0; margin: 24px 0; }
+:where(.versions-page) .baseline-steps li { display: flex; align-items: center; gap: 9px; padding: 12px; border-bottom: 2px solid #dce3ed; color: #64738a; font-size: 12px; }
+:where(.versions-page) .baseline-steps li > span { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; background: #e8edf5; font-weight: 650; }
+:where(.versions-page) .baseline-steps .current { color: #244caa; border-bottom-color: #315ed4; font-weight: 650; }
+:where(.versions-page) .baseline-steps .current > span { background: #315ed4; color: #fff; }
+:where(.versions-page) .baseline-steps .done { color: #22745d; border-bottom-color: #9bcbbf; }
+:where(.versions-page) .baseline-input { margin-top: 22px; }
+:where(.versions-page) .baseline-input label { display: block; font-size: 13px; font-weight: 650; margin-bottom: 8px; }
+:where(.versions-page) .baseline-input label > span { font-size: 11px; font-weight: 400; color: #64738a; }
+:where(.versions-page) .baseline-input input, :where(.versions-page) .baseline-input select, :where(.versions-page) .baseline-input textarea { display: block; width: 100%; padding: 10px 12px; border: 1px solid #bdcbe0; border-radius: 5px; font: inherit; font-size: 13px; color: #243b57; background: #fff; }
+:where(.versions-page) .baseline-input textarea { resize: vertical; min-height: 100px; }
+:where(.versions-page) .baseline-input [aria-invalid="true"] { border-color: #b43d4e; }
+:where(.versions-page) .baseline-field-error { color: #a52f40; font-size: 12px; line-height: 1.65; margin: 8px 0 0; }
+:where(.versions-page) .baseline-save-error { padding: 12px 16px; border: 1px solid #e4b7be; border-radius: 5px; background: #fff0f2; margin-top: 18px; }
+:where(.versions-page) .eyebrow { display: block; color: #64738a; font-size: 11px; font-weight: 650; margin-bottom: 8px; }
+:where(.versions-page) .version-prototype-note { margin: 20px 0 24px; padding: 12px 16px; border: 1px solid #d3dff5; border-radius: 6px; background: #eaf1fd; font-size: 12px; color: #435d80; }
+:where(.versions-page) .version-example-label { display: inline-block; margin-left: 8px; padding: 1px 5px; border: 1px solid #d3dce6; border-radius: 4px; color: #64738a; background: #f5f7fa; font-size: 10px; font-weight: 400; vertical-align: middle; }
+:where(.versions-page) .version-loading-error { max-width: 1336px; margin: 20px auto 0; padding: 12px 16px; background: #fff0f2; border: 1px solid #e4b7be; color: #a52f40; border-radius: 5px; font-size: 13px; }
+:where(.versions-page) .version-saving-reason { white-space: pre-wrap; overflow-wrap: anywhere; }
+:where(.versions-page) .baseline-success { padding: 12px 16px; border: 1px solid #b7dbd2; border-radius: 6px; background: #edf8f4; color: #22745d; font-size: 13px; }
+:where(.versions-page) .version-text-button { padding: 0; border: 0; background: none; color: #315ed4; text-decoration: underline; font: inherit; cursor: pointer; }
+:where(.versions-page) .baseline-locked-versions > div { display: flex; flex-direction: column; gap: 8px; font-size: 13px; line-height: 1.6; }
+:where(.versions-page) .baseline-locked-versions span { color: #64738a; font-size: 11px; }
+:where(.versions-page) .baseline-history > summary { padding: 19px 22px; font-size: 14px; list-style-position: inside; }
+:where(.versions-page) .baseline-history ol { list-style: none; padding: 0 22px; margin: 0; }
+:where(.versions-page) .baseline-history li { padding: 18px 0; border-top: 1px solid #e4e9f1; font-size: 12px; line-height: 1.65; }
+:where(.versions-page) .baseline-history p { color: #526780; margin: 8px 0; }
+:where(.versions-page) .version-summary-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+:where(.versions-page) .version-summary { padding: 22px; background: #fff; border: 1px solid #dce3ed; border-radius: 9px; border-top: 3px solid #5276ba; }
+:where(.versions-page) .version-summary.proposed { border-top-color: #b38a00; }
+:where(.versions-page) .version-summary h2 { margin-bottom: 12px; }
+:where(.versions-page) .version-summary p { font-size: 13px; margin: 12px 0; }
+:where(.versions-page) .help { font-size: 12px; line-height: 1.65; color: #64738a; }
+:where(.versions-page) .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 39px; padding: 9px 14px; border: 1px solid #bdcbe0; border-radius: 6px; background: #fff; color: #243a55; text-decoration: none; font-size: 12px; font-weight: 650; cursor: pointer; }
+:where(.versions-page) .btn:hover { background: #f1f5fc; }
+:where(.versions-page) .btn.primary { background: #315ed4; border-color: #315ed4; color: #fff; }
+:where(.versions-page) .btn.primary:hover { background: #244db9; }
+:where(.versions-page) .btn.small { min-height: 34px; padding: 7px 11px; font-size: 11px; }
+:where(.versions-page) .version-status { display: inline-block; padding: 5px 8px; background: #f2f4f7; border: 1px solid #d3dce6; color: #52647b; border-radius: 5px; font-size: 11px; font-weight: 650; white-space: nowrap; }
+:where(.versions-page) .version-status.current { color: #244caa; background: #edf3ff; border-color: #c4d6fb; }
+:where(.versions-page) .version-status.proposed { color: #7d5a00; background: #fff8df; border-color: #e5cf8c; }
+:where(.versions-page) .version-card { background: #fff; border: 1px solid #dce3ed; border-radius: 9px; overflow: hidden; margin-top: 24px; }
+:where(.versions-page) .version-card-head { display: flex; justify-content: space-between; align-items: center; gap: 18px; padding: 19px 22px; border-bottom: 1px solid #e4e9f1; flex-wrap: wrap; }
+:where(.versions-page) .version-card-head p { color: #64738a; font-size: 12px; margin: 6px 0 0; }
+:where(.versions-page) .version-field { display: flex; flex-direction: column; gap: 7px; color: #526780; font-size: 11px; font-weight: 650; min-width: 0; }
+:where(.versions-page) .version-field select { min-height: 38px; max-width: 100%; background: #fff; color: #243b57; border: 1px solid #bdcbe0; border-radius: 5px; padding: 8px 30px 8px 10px; font-size: 12px; }
+:where(.versions-page) .version-table-scroll { overflow: auto; }
+:where(.versions-page) table { border-collapse: collapse; width: 100%; font-size: 12px; text-align: left; }
+:where(.versions-page) th, :where(.versions-page) td { padding: 14px 20px; border-bottom: 1px solid #e5eaf2; vertical-align: top; line-height: 1.65; overflow-wrap: anywhere; }
+:where(.versions-page) thead th { background: #f6f8fb; color: #526780; font-size: 11px; font-weight: 700; }
+:where(.versions-page) tbody th { font-weight: 600; }
+:where(.versions-page) tbody tr:last-child > * { border-bottom: 0; }
+:where(.versions-page) td > span, :where(.versions-page) td > strong, :where(.versions-page) th > strong { display: block; }
+:where(.versions-page) td > .version-status, :where(.versions-page) td > .finding-severity, :where(.versions-page) td > .change-status { display: inline-block; }
+:where(.versions-page) small { display: block; color: #64738a; font-size: 11px; line-height: 1.65; font-weight: 400; margin-top: 4px; }
+:where(.versions-page) .versions-list { min-width: 680px; table-layout: fixed; }
+:where(.versions-page) .versions-list th:first-child { width: 42%; }
+:where(.versions-page) .versions-list th:nth-child(2) { width: 18%; }
+:where(.versions-page) .versions-list th:last-child { width: 170px; }
+:where(.versions-page) .versions-list tbody a:not(.btn) { text-decoration: none; }
+:where(.versions-page) .versions-list tbody a:not(.btn):hover { text-decoration: underline; }
+:where(.versions-page) .version-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+:where(.versions-page) .version-explainer { margin-top: 24px; padding: 18px 22px; background: #fff; border: 1px solid #dce3ed; border-radius: 8px; font-size: 13px; }
+:where(.versions-page) summary { cursor: pointer; font-weight: 650; }
+:where(.versions-page) dl { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 12px 20px; margin: 20px 0 0; }
+:where(.versions-page) dt { font-weight: 650; }
+:where(.versions-page) dd { margin: 0; color: #526780; line-height: 1.6; }
+:where(.versions-page) .version-back { display: inline-block; margin: 0 0 20px; font-size: 13px; font-weight: 650; text-decoration: none; }
+:where(.versions-page) .version-back:hover { text-decoration: underline; }
+:where(.versions-page) .version-view-heading { display: flex; gap: 20px; align-items: center; justify-content: space-between; }
+:where(.versions-page) .version-view-heading p { max-width: 75ch; color: #526780; font-size: 13px; }
+:where(.versions-page) .version-card-content { padding: 8px 22px 22px; }
+:where(.versions-page) .version-record p { font-size: 12px; color: #526780; }
+:where(.versions-page) .version-scope { margin: 16px 0; font-size: 12px; line-height: 1.65; }
+:where(.versions-page) .readonly-label { color: #64738a; font-size: 12px; }
+:where(.versions-page) .version-counts { display: flex; gap: 7px; flex-wrap: wrap; }
+:where(.versions-page) .version-counts > span { padding: 5px 8px; border: 1px solid #dce3ed; border-radius: 5px; background: #f6f8fb; color: #526780; font-size: 11px; }
+:where(.versions-page) .version-counts .critical-count { border-color: #e4b7be; background: #fff0f2; color: #a52f40; }
+:where(.versions-page) .version-counts .warning-count { border-color: #e4c88b; background: #fff6df; color: #7d5106; }
+:where(.versions-page) .version-card-note { margin: 0; padding: 14px 22px; color: #64738a; font-size: 11px; }
+:where(.versions-page) .readonly-pipeline { background: #fff; }
+:where(.versions-page) .readonly-pipeline .row-label > strong { display: block; font-size: 12px; line-height: 1.6; }
+:where(.versions-page) .version-schedule { padding: 18px 22px; border-bottom: 1px solid #e5eaf2; }
+:where(.versions-page) .version-schedule:last-child { border-bottom: 0; }
+:where(.versions-page) .version-schedule summary { font-size: 13px; }
+:where(.versions-page) .version-schedule summary > span { margin-left: 15px; font-size: 11px; color: #64738a; font-weight: 400; }
+:where(.versions-page) .version-schedule table { min-width: 660px; }
+:where(.versions-page) .version-anchor { margin: 18px 0 12px; padding: 12px 15px; background: #edf3ff; border: 1px solid #d7e3f7; border-radius: 6px; font-size: 12px; }
+:where(.versions-page) .version-anchor p { margin: 5px 0 0; color: #526780; }
+:where(.versions-page) .version-rule-list { list-style: none; margin: 0; padding: 0 22px; }
+:where(.versions-page) .version-rule-list li { display: flex; align-items: start; gap: 16px; padding: 16px 0; border-bottom: 1px solid #e5eaf2; font-size: 12px; line-height: 1.65; }
+:where(.versions-page) .version-rule-list li:last-child { border-bottom: 0; }
+:where(.versions-page) .version-rules-disclosure > summary { padding: 19px 22px; font-size: 14px; list-style-position: inside; }
+:where(.versions-page) .version-rules-disclosure[open] > summary { border-bottom: 1px solid #e4e9f1; }
+:where(.versions-page) .version-rules-disclosure > .version-card-note { padding-bottom: 0; }
+:where(.versions-page) .comparison-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; padding: 20px 22px; background: #fff; border: 1px solid #dce3ed; border-radius: 8px; }
+:where(.versions-page) .comparison-scope { font-size: 12px; color: #64738a; margin: 13px 0 18px; }
+:where(.versions-page) .version-review-nav { position: sticky; top: 0; z-index: 20; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; padding: 10px 14px; border: 1px solid #d7e1ef; border-radius: 6px; background: #f1f5fc; }
+:where(.versions-page) .version-review-nav button { cursor: pointer; color: #244caa; border: 0; background: transparent; padding: 6px; font-size: 12px; font-weight: 650; text-decoration: underline; text-underline-offset: 3px; }
+:where(.versions-page) .version-review-nav button:hover { color: #172f70; }
+:where(.versions-page) .comparison-section-title { margin: 26px 0 8px; }
+:where(.versions-page) .comparison-timeline { margin-top: 16px; }
+:where(.versions-page) #version-timelines h2, :where(.versions-page) #version-date-changes h2, :where(.versions-page) #version-findings h2 { scroll-margin-top: 88px; }
+:where(.versions-page) .version-comparison-table { min-width: 720px; table-layout: fixed; }
+:where(.versions-page) .version-comparison-table th:first-child { width: 29%; }
+:where(.versions-page) .version-comparison-table th:nth-child(2), :where(.versions-page) .version-comparison-table th:nth-child(3) { width: 27%; }
+:where(.versions-page) .version-comparison-table th:last-child { width: 17%; }
+:where(.versions-page) .version-comparison-table .proposed-value { background: #f1f6ff; }
+:where(.versions-page) .version-comparison-table .proposed-value > span { font-weight: 650; }
+:where(.versions-page) .gap-change > * { background: #f4f5f7; color: #5f6f82; }
+:where(.versions-page) .gap-change > .proposed-value { background: #e9edf3; }
+:where(.versions-page) .duration-changed { color: #244caa; font-weight: 650; }
+:where(.versions-page) .not-present { color: #78879b; font-style: italic; font-weight: 400; }
+:where(.versions-page) .change-status { display: inline-block; border: 1px solid #ccd8eb; padding: 3px 6px; border-radius: 4px; background: #edf3ff; color: #315587; font-size: 10px; font-weight: 650; }
+:where(.versions-page) .change-status.added, :where(.versions-page) .change-status.resolved { border-color: #b7dbd2; background: #edf8f4; color: #22745d; }
+:where(.versions-page) .change-status.removed { border-color: #d9dce2; background: #f0f2f5; color: #626f80; }
+:where(.versions-page) .version-empty { padding: 20px 22px; margin: 0; color: #526780; font-size: 13px; }
+:where(.versions-page) .finding-totals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; padding: 20px 22px; }
+:where(.versions-page) .finding-totals h3 { font-size: 12px; margin-bottom: 9px; }
+:where(.versions-page) .finding-severity { display: inline-block; border: 1px solid #e4c88b; border-radius: 4px; background: #fff6df; color: #7d5106; padding: 3px 6px; font-size: 10px; font-weight: 650; flex-shrink: 0; }
+:where(.versions-page) .finding-severity.critical { border-color: #e4b7be; background: #fff0f2; color: #a52f40; }
+:where(.versions-page) .finding-severity + span { margin-top: 6px; }
+:where(.versions-page) .version-rule-changes { padding: 20px 22px; border-top: 1px solid #e5eaf2; font-size: 12px; color: #526780; }
+:where(.versions-page) .version-rule-changes h3 { color: #17283d; margin-bottom: 12px; }
+:where(.versions-page) .version-rule-changes ul { padding: 0; margin: 0; list-style: none; }
+:where(.versions-page) .version-rule-changes p { margin: 5px 0; }
+:where(.versions-page) .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+@media (max-width: 800px) {
+  :where(.versions-page) .versions-main { padding: 24px 16px 36px; }
+  :where(.versions-page) .version-summary-grid { gap: 14px; }
+  :where(.versions-page) .version-summary { padding: 18px; }
+  :where(.versions-page) th, :where(.versions-page) td { padding: 12px 14px; }
+  :where(.versions-page) .version-card-head, :where(.versions-page) .version-rules-disclosure > summary { padding: 16px; }
+  :where(.versions-page) .version-view-heading { align-items: start; flex-direction: column; gap: 0; }
+}
+@media (max-width: 600px) {
+  :where(.versions-page) h1 { font-size: 26px; }
+  :where(.versions-page) .version-heading-row { flex-direction: column; align-items: start; gap: 16px; }
+  :where(.versions-page) .baseline-steps { gap: 5px; }
+  :where(.versions-page) .baseline-steps li { flex-direction: column; align-items: start; padding: 8px 4px; font-size: 10px; }
+  :where(.versions-page) .version-summary-grid, :where(.versions-page) .comparison-choices, :where(.versions-page) .finding-totals { grid-template-columns: minmax(0, 1fr); }
+  :where(.versions-page) .version-review-nav { gap: 4px 10px; }
+  :where(.versions-page) .version-review-nav button { font-size: 11px; }
+  :where(.versions-page) .version-rule-list li { flex-direction: column; gap: 7px; }
+  :where(.versions-page) dl { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  :where(.versions-page) dd { margin-bottom: 8px; }
+}
+
+:where(.versions-page) .version-summary,
+:where(.versions-page) .version-record,
+:where(.versions-page) .baseline-history { min-width: 0; overflow-wrap: anywhere; }
+:where(.versions-page) .version-view-heading > div,
+:where(.versions-page) .version-card-head > div { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+:where(.versions-page) .change-status { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+:where(.versions-page) .version-table-scroll { position: relative; }

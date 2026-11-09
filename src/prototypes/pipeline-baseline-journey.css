@@ -1,0 +1,27 @@
+dialog.baseline-journey-modal { position: fixed; inset: 0; margin: auto; width: min(1000px, calc(100vw - 40px)); max-width: none; height: min(800px, calc(100dvh - 32px)); max-height: calc(100dvh - 32px); padding: 0; border-radius: 10px; background: #fff; }
+dialog.baseline-journey-modal[open] { display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; }
+dialog.baseline-journey-modal::backdrop { background: #17283d66; backdrop-filter: none; }
+dialog.baseline-journey-modal > header { padding: 18px 22px 14px; }
+dialog.baseline-journey-modal > header > div { min-width: 0; overflow-wrap: anywhere; }
+dialog.baseline-journey-modal > header h2 { font-size: 20px; margin: 0 0 7px; }
+dialog.baseline-journey-modal > .baseline-steps { margin: 0; padding: 8px 18px 0; background: #f9fbfe; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+dialog.baseline-journey-modal .baseline-journey-body { min-height: 0; overflow: auto; padding: 18px 22px 24px; overscroll-behavior: contain; }
+dialog.baseline-journey-modal .baseline-input { margin-top: 18px; }
+dialog.baseline-journey-modal .baseline-input label { margin: 0 0 8px; }
+dialog.baseline-journey-modal .baseline-modal-reason { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 0 0 16px; color: #526780; }
+dialog.baseline-journey-modal .comparison-choices { padding: 13px 16px; gap: 16px; }
+dialog.baseline-journey-modal .version-review-nav { border-radius: 5px; padding: 6px 10px; }
+dialog.baseline-journey-modal .version-card-head { padding: 15px 16px; }
+dialog.baseline-journey-modal th, dialog.baseline-journey-modal td { padding: 11px 13px; }
+dialog.baseline-journey-modal > footer { justify-content: flex-end; padding: 14px 22px; }
+dialog.baseline-journey-modal .baseline-modal-result { font-size: 13px; line-height: 1.7; overflow-wrap: anywhere; }
+dialog.baseline-journey-modal .baseline-modal-result h3 { margin: 16px 0 12px; font-size: 18px; }
+dialog.baseline-journey-modal .baseline-modal-result p { color: #526780; white-space: pre-wrap; }
+@media (max-width: 650px) {
+  dialog.baseline-journey-modal { width: calc(100vw - 16px); height: calc(100dvh - 16px); max-height: calc(100dvh - 16px); }
+  dialog.baseline-journey-modal > header, dialog.baseline-journey-modal > footer { padding: 14px; }
+  dialog.baseline-journey-modal .baseline-journey-body { padding: 14px; }
+  dialog.baseline-journey-modal > footer { flex-wrap: wrap; }
+  dialog.baseline-journey-modal > footer > .primary { flex: 1; }
+  dialog.baseline-journey-modal > .baseline-steps { padding-inline: 10px; }
+}

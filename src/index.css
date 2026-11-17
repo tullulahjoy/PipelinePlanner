@@ -1,7 +1,33 @@
 :root {
-  font-family: system-ui, sans-serif;
-  color: #111;
-  background: #fff;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Aubergine interface palette. Stored phase colours and clash severity colours are independent. */
+  --header: #35233f;
+  --header-active: #513a5e;
+  --header-muted: #d8cbdf;
+  --header-border: #927da0;
+  --header-focus: #e1c5f1;
+  --ink: #322a39;
+  --muted: #706478;
+  --primary: #76508b;
+  --primary-hover: #604071;
+  --primary-soft: #f1eaf5;
+  --primary-border: #ccb5d7;
+  --page: #f6f3f7;
+  --surface: #ffffff;
+  --surface-subtle: #faf8fb;
+  --surface-muted: #f2eef5;
+  --on-strong: #ffffff;
+  --border: #e1d9e5;
+  --border-strong: #c8b9d0;
+  --control-border: #a18bab;
+  --editing: #326c72;
+  --editing-hover: #28585e;
+  --editing-soft: #edf5f5;
+  --editing-border: #a9c9cd;
+  --review-surface: #dcebec;
+  --review-border: #90b4b9;
+  color: var(--ink);
+  background: var(--page);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -11,3 +37,12 @@
 body {
   margin: 0;
 }
+
+* { box-sizing: border-box; }
+button, input, select { font: inherit; }
+a { color: var(--primary); }
+p { line-height: 1.6; }
+strong, b { font-weight: 700; }
+:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+input[type=checkbox], input[type=radio] { accent-color: var(--primary); }
+main, section, input, select, strong { min-width: 0; overflow-wrap: anywhere; }

@@ -17,10 +17,11 @@
     "jsx": "react-jsx",
 
     /* Linting */
+    "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src/App.tsx", "src/main.tsx", "src/app", "src/data", "src/domain", "src/features"]
 }

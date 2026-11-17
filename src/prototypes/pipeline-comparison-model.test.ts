@@ -68,7 +68,7 @@ test('starts use actual first scheduled activity and preserve days; metadata and
   const model = procurementComparisons(first, second)[0]
   assert.ok(model.labels.includes('Begins 1 day earlier'))
   assert.ok(model.summaries.some(s => s.includes('Procurement renamed')))
-  assert.ok(model.summaries.some(s => s.includes('Actual anchor: 1 day later')))
+  assert.ok(model.summaries.some(s => s.includes('Anchor: 1 day later')))
   assert.deepEqual(procurementComparisons(first, first), [])
   const gap = shifted(first, 0); gap.plans[0].phases[1].s += WEEK; gap.plans[0].phases[1].e += WEEK
   assert.ok(procurementComparisons(first, gap)[0].labels.includes('Gaps altered'))

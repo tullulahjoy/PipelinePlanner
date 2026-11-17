@@ -1,0 +1,73 @@
+.project-page { max-width: 1216px; margin: auto; }
+.project-page.project-edit { max-width: 1296px; }
+.project-page .page-heading { margin-bottom: 24px; }
+.project-page .page-heading h1 { font-size: 30px; letter-spacing: -.03em; }
+.project-page .page-heading p { color: var(--muted); font-size: 14px; line-height: 1.7; }
+.project-page .planning-card { padding: 0; border: 1px solid var(--border); border-radius: 9px; margin-bottom: 16px; overflow: visible; }
+.editor-card-heading { display: flex; align-items: flex-start; gap: 14px; padding: 20px 22px 16px; }
+.editor-card-heading > div { flex: 1; min-width: 0; }
+.editor-card-heading h2 { margin: 0; font-size: 17px; }
+.editor-card-heading p { margin: 7px 0 0; color: var(--muted); font-size: 13px; line-height: 1.7; }
+.section-number { display: inline-grid; place-items: center; min-width: 29px; padding: 6px 9px; background: var(--surface-muted); border-radius: 5px; font-size: 12px; font-weight: 700; }
+.editor-card-body { padding: 0 22px 22px; }
+.editor-card-body .field { max-width: 620px; }
+.procurement-apply-hint { position: relative; display: inline-flex; }
+.procurement-apply-hint [role=tooltip] { position: absolute; z-index: 1; right: 0; bottom: 100%; width: max-content; max-width: min(300px, calc(100vw - 48px)); padding: 10px 12px; border-radius: 5px; background: var(--ink); color: var(--on-strong); font-size: 13px; line-height: 1.6; box-shadow: 0 4px 16px color-mix(in srgb, var(--header) 20%, transparent); pointer-events: none; }
+.project-page .supporting-text { padding: 0 22px; }
+.project-page .form-columns { margin: 0 22px 16px; }
+.project-page .planning-card > p { margin: 0; padding: 0 22px 18px; color: var(--muted); font-size: 13px; line-height: 1.7; }
+.review-stage { display: contents; }
+.project-page .project-actions { position: sticky; bottom: 0; z-index: 5; display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 12px 20px; padding: 16px 20px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface); box-shadow: 0 -3px 12px color-mix(in srgb, var(--header) 3.92%, transparent); }
+.project-action-buttons { justify-content: flex-end; flex-wrap: wrap; }
+.review-save-note { flex: 1 1 260px; max-width: 65ch; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.review-stage.has-review .project-actions { background: var(--review-surface); border-color: var(--review-border); border-radius: 0 0 9px 9px; }
+.project-page.project-edit .project-actions { gap: 8px 16px; padding-block: 8px; }
+.project-edit .project-action-buttons { margin-top: 0; }
+.project-edit .review-save-note { max-width: none; line-height: 1.45; }
+.procurement-summary { display: grid; grid-template-columns: 1.7fr 1.6fr 1fr; gap: 20px; margin: 0; padding: 0 22px 20px; }
+.procurement-summary dt { color: var(--muted); font-size: 12px; }
+.procurement-summary dd { margin: 6px 0 0; font-weight: 700; font-size: 14px; }
+.procurement-confirm-summary { display: grid; gap: 12px; margin: 20px 0; }
+.procurement-confirm-summary > div { display: grid; grid-template-columns: 100px minmax(0, 1fr); gap: 14px; }
+.procurement-confirm-summary dt { color: var(--muted); font-size: 13px; }
+.procurement-confirm-summary dd { margin: 0; overflow-wrap: anywhere; }
+.movement-summary { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; padding: 16px; margin-bottom: 20px; border: 1px solid var(--primary-border); border-radius: 6px; background: var(--primary-soft); }
+.movement-summary p { margin: 0; }
+.schedule-review { padding: 20px 22px; border-top: 1px solid var(--border); }
+.project-page .review-card { padding: 0; margin-bottom: 0; border-color: var(--review-border); border-top: 4px solid var(--editing); border-bottom: 0; border-radius: 9px 9px 0 0; }
+.review-card > .editor-card-heading { padding: 20px 22px; background: var(--review-surface); border-bottom: 1px solid var(--review-border); border-radius: 8px 8px 0 0; }
+.review-stage-content { padding: 22px; }
+.review-stage-content h3 { margin: 0 0 16px; font-size: 16px; }
+.review-card .findings-heading h4 { margin: 0; font-size: 15px; }
+.anchor-planning-note { display: block; max-width: 34ch; margin-top: 6px; color: var(--muted); font-size: 12px; font-weight: 400; line-height: 1.6; }
+.review-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 16px; }
+.review-tools h3 { margin: 0; }
+.schedule-comparison-toggle { display: flex; justify-content: flex-start; margin-bottom: 18px; }
+.comparison-controls { display: flex; align-items: end; flex-wrap: wrap; gap: 12px; }
+.phase-date-details, .procurement-impact { margin: 18px 0; border: 1px solid var(--border); border-radius: 5px; }
+.phase-date-details summary, .clash-check-heading { padding: 14px 16px; background: var(--surface-subtle); border-radius: 5px; font-size: 16px; font-weight: 700; }
+.phase-date-details summary { cursor: pointer; }
+.clash-check-heading { border-bottom: 1px solid var(--border); border-radius: 5px 5px 0 0; }
+.review-stage-content .clash-check-heading h3 { margin: 0; font-size: 16px; }
+.clash-check-content { padding: 16px; }
+.clash-check-content > p { margin: 0 0 14px; font-size: 13px; line-height: 1.6; }
+.clash-check-content > p:last-child { margin-bottom: 0; }
+.clash-check-content .planning-findings { margin: 16px 0; }
+.phase-date-details summary small, .clash-check-heading p { display: block; margin: 6px 0 0; color: var(--muted); font-size: 13px; font-weight: 400; line-height: 1.6; }
+.phase-date-details summary small { margin-left: 18px; }
+.phase-date-details[open] summary { border-bottom: 1px solid var(--border); border-radius: 5px 5px 0 0; }
+.duration-comparison { display: block; }
+.christmas-duration-note { display: block; max-width: 30ch; margin-top: 6px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.review-card .planning-findings { margin-bottom: 20px; }
+.procurement-confirm-dialog .critical-explanation { padding: 16px; margin: 20px 0; border: 1px solid #edb1bc; border-radius: 6px; background: #fff3f5; }
+.procurement-confirm-dialog .critical-explanation h3 { margin: 0; }
+.procurement-confirm-dialog .critical-explanation p { margin: 10px 0; }
+.procurement-confirm-dialog .critical-explanation p:last-child { margin-bottom: 0; font-size: 13px; }
+.review-card table { min-width: 650px; }
+.review-card .planning-timeline { margin-bottom: 18px; }
+.anchor-grid { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: 14px; align-items: start; }
+.anchor-grid input, .anchor-grid select { width: 100%; }
+.project-page .editor-card-body .supporting-text { padding: 0; }
+@media (max-width: 1050px) { .anchor-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px) { .anchor-grid { grid-template-columns: 1fr; } .schedule-toolbar { padding-inline: 16px; } .template-tools { max-width: none; } .project-page .schedule-add-controls { width: 100%; } .project-page .schedule-add-controls .button { flex: 1; } }
+@media (max-width: 700px) { .editor-card-heading { flex-wrap: wrap; padding: 18px 16px 14px; } .editor-card-body { padding-inline: 16px; } .template-tools { padding-inline: 16px; } .procurement-summary { grid-template-columns: 1fr 1fr; padding-inline: 16px; } .review-stage-content { padding: 16px; } .review-card > .editor-card-heading { padding: 18px 16px; } .project-page .project-actions { padding: 14px 16px; } }

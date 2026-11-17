@@ -1,0 +1,322 @@
+import { expect, test } from '@playwright/test'
+import type { Page } from '@playwright/test'
+
+async function setup(page: Page, _legacy = false) {
+  await page.goto('/workspaces')
+  const data = await page.evaluate(async () => {
+    const dataPath = '/src/data/local-data.ts', projectPath = '/src/domain/project.ts'
+    const { localData } = await import(dataPath), { scheduleProject } = await import(projectPath)
+    const workspace = await localData.createWorkspace('Adjustment team')
+    let library = await localData.createPhase(workspace.id, { name: 'Preparation', weeks: 4, color: '#6a62a2', checks: [] })
+    library = await localData.createPhase(workspace.id, { name: 'Evaluation', weeks: 4, color: '#315ed4', checks: [{ target: 'self', severity: 'critical', reason: '' }] })
+    library = await localData.createPhase(workspace.id, { name: 'Mobilisation', weeks: 8, color: '#17766e', checks: [] })
+    function plan(name: string, anchor: number) {
+      return scheduleProject({ id: crypto.randomUUID(), name, anchor, planningAnchor: 0, anchorId: 3, anchorName: 'Service begins', nextPhaseId: 5, approvedBaseline: null, phases: [
+        ...library.phases.slice(0, 2).map((phase: { id: string }, index: number) => ({ ...phase, id: index + 1, kind: 'phase', libraryPhaseId: phase.id, durationInherited: true, offset: 0, s: 0, e: 0 })),
+        { id: 3, name: 'Service begins', kind: 'milestone', weeks: 0, offset: 0, libraryPhaseId: '', color: '#536ea1', durationInherited: false, s: 0, e: 0 },
+        { ...library.phases[2], id: 4, kind: 'phase', libraryPhaseId: library.phases[2].id, durationInherited: true, offset: 0, s: 0, e: 0 },
+      ] })
+    }
+    const record = await localData.savePipeline({ id: crypto.randomUUID(), workspaceId: workspace.id, expectedRevision: 0, expectedLibraryRevision: library.revision, name: 'Autumn plan', note: 'Keep these notes', plans: [plan('Community services', Date.UTC(2032, 4, 12)), plan('Digital services', Date.UTC(2032, 4, 19))], acknowledgements: [] })
+    return { workspace, library, record }
+  })
+  await page.goto(`/workspaces/${data.workspace.id}/pipeline/${data.record.id}?edit=1`)
+  return data
+}
+async function open(page: Page) {
+  await page.getByRole('button', { name: 'Adjust pipeline plan', exact: true }).click()
+  const dialog = page.getByRole('dialog', { name: 'Adjust pipeline plan', exact: true })
+  await dialog.getByLabel('Number of weeks', { exact: true }).fill('2')
+  return dialog
+}
+async function saved(page: Page, data: Awaited<ReturnType<typeof setup>>) {
+  return page.evaluate(async ({ workspace, record }) => {
+    const path = '/src/data/local-data.ts', { localData } = await import(path)
+    return localData.getPipeline(workspace.id, record.id)
+  }, data)
+}
+
+test('range review/apply preserves saved contents and unrelated projects; duration edits keep provenance', async ({ page }, info) => {
+  const data = await setup(page)
+  let dialog = await open(page)
+  await expect(dialog.getByRole('radio', { name: 'Phase range', exact: true })).toBeChecked()
+  await expect(dialog.getByLabel('Through to phase')).toHaveValue('1')
+  await expect(dialog.getByRole('button', { name: 'Review changes', exact: true })).toBeDisabled()
+  await dialog.getByRole('button', { name: 'Apply movement', exact: true }).click()
+  await expect(dialog).toContainText('Selected activity moved 2 weeks earlier')
+  await dialog.getByRole('button', { name: 'Review changes', exact: true }).click()
+  await expect(dialog.getByRole('columnheader', { name: 'Movement' })).toBeVisible()
+  await expect(dialog.getByRole('region', { name: 'Date and duration changes table' })).toContainText('2 weeks earlier')
+  await page.screenshot({ path: info.outputPath('adjustment-review.png') })
+  await expect(dialog.locator('textarea')).toHaveCount(0)
+  await dialog.getByRole('button', { name: 'Apply adjustments', exact: true }).click()
+  await expect(dialog).not.toBeVisible()
+  expect((await saved(page, data)).plans).toEqual(data.record.plans)
+  await expect(page.getByRole('dialog', { name: 'Editing live pipeline plan', exact: true }).locator('.context-save-state')).toHaveText('Unsaved changes')
+  dialog = await open(page)
+  await dialog.getByRole('radio', { name: 'One phase', exact: true }).check()
+  await dialog.getByRole('tab', { name: 'Change duration', exact: true }).click()
+  await dialog.getByLabel('Duration (weeks)', { exact: true }).fill('3')
+  await dialog.getByRole('button', { name: 'Apply duration change', exact: true }).click()
+  await dialog.getByRole('button', { name: 'Review changes', exact: true }).click()
+  await dialog.getByRole('button', { name: 'Apply adjustments', exact: true }).click()
+  await page.getByRole('region', { name: 'Pipeline Plan context' }).getByRole('button', { name: 'Save', exact: true }).click()
+  await page.getByRole('group', { name: 'Save the displayed pipeline plan' }).getByRole('button', { name: 'Save', exact: true }).click()
+  await page.getByRole('dialog', { name: 'Save changes to “Autumn plan”?', exact: true }).getByRole('button', { name: 'Overwrite and save', exact: true }).click()
+  const result = await saved(page, data)
+  expect(result.note).toBe(data.record.note)
+  expect(result.plans[1]).toEqual(data.record.plans[1])
+  expect(result.plans[0].phases[0]).toMatchObject({ weeks: 3, durationInherited: false, libraryPhaseId: data.library.phases[0].id })
+  expect(result.plans[0].anchor).toBe(data.record.plans[0].anchor)
+})
+
+test('cancel and X use a foreground discard; undo restores the starting point and focus', async ({ page }) => {
+  await setup(page)
+  let dialog = await open(page)
+  await dialog.getByRole('button', { name: 'Apply movement', exact: true }).click()
+  await dialog.getByRole('button', { name: 'Cancel adjustment', exact: true }).click()
+  const discard = page.getByRole('alertdialog', { name: 'Discard these adjustments?', exact: true })
+  await expect(discard.getByRole('button', { name: 'Keep editing', exact: true })).toBeFocused()
+  await discard.getByRole('button', { name: 'Keep editing', exact: true }).click()
+  await expect(dialog.getByRole('button', { name: 'Cancel adjustment', exact: true })).toBeFocused()
+  await dialog.getByRole('button', { name: 'Undo last change', exact: true }).click()
+  await expect(dialog.getByRole('button', { name: 'Review changes', exact: true })).toBeDisabled()
+  await dialog.getByRole('button', { name: 'Close Adjust pipeline plan', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Adjust pipeline plan', exact: true })).toBeFocused()
+  dialog = await open(page)
+  await dialog.getByRole('button', { name: 'Apply movement', exact: true }).click()
+  await dialog.getByRole('button', { name: 'Review changes', exact: true }).click()
+  await dialog.getByRole('button', { name: 'Close Adjust pipeline plan', exact: true }).click()
+  await discard.getByRole('button', { name: 'Discard adjustments', exact: true }).click()
+  await expect(page.getByRole('dialog', { name: 'Editing live pipeline plan', exact: true }).locator('.context-save-state')).toHaveText('All changes saved')
+})
+
+test('keyboard and pointer dragging snap to weeks; locked anchors require explicit permission', async ({ page }) => {
+  const data = await setup(page)
+  const dialog = await open(page)
+  const grip = dialog.getByRole('button', { name: /^Move selected activity in Community services/ })
+  await grip.focus(); await page.keyboard.press('Space')
+  await expect(dialog.locator('.adjustment-readout')).toBeVisible()
+  await page.keyboard.press('ArrowLeft')
+  await expect(dialog.locator('.adjustment-readout')).toContainText('1 week earlier')
+  await page.keyboard.press('Space')
+  await expect(dialog).toContainText('Selected activity moved 1 week earlier')
+  const box = await grip.boundingBox()
+  const week = await dialog.locator('.timeline-canvas').evaluate(element => parseFloat((element as HTMLElement).style.getPropertyValue('--timeline-week')))
+  await page.mouse.move(box!.x + 10, box!.y + 10); await page.mouse.down(); await page.mouse.move(box!.x + 10 - 2 * week, box!.y + 10, { steps: 12 }); await page.waitForTimeout(100); await page.mouse.up()
+  await expect(dialog).toContainText('Selected activity moved 2 weeks earlier')
+  await dialog.getByRole('radio', { name: 'Whole procurement', exact: true }).check()
+  await dialog.getByRole('button', { name: 'Apply movement', exact: true }).click()
+  await expect(dialog.getByRole('alert')).toContainText('locked anchor')
+  await dialog.getByLabel("Allow this procurement's anchor date to move").check()
+  await dialog.getByRole('button', { name: 'Apply movement', exact: true }).click()
+  await dialog.getByRole('button', { name: 'Review changes', exact: true }).click()
+  await expect(dialog.getByRole('region', { name: 'Date and duration changes table' })).toContainText('Anchor: Service begins')
+  await dialog.getByRole('button', { name: 'Apply adjustments', exact: true }).click()
+  expect((await saved(page, data)).plans[0].anchor).toBe(data.record.plans[0].anchor)
+})
+
+test('anchor movement permission resets after applying or closing Adjust', async ({ page }) => {
+  await setup(page)
+  let dialog = await open(page)
+  await dialog.getByRole('radio', { name: 'Whole procurement', exact: true }).check()
+  await dialog.getByLabel("Allow this procurement's anchor date to move").check()
+  await dialog.getByRole('button', { name: 'Apply movement', exact: true }).click()
+  await dialog.getByRole('button', { name: 'Review changes', exact: true }).click()
+  await dialog.getByRole('button', { name: 'Apply adjustments', exact: true }).click()
+  dialog = await open(page)
+  await dialog.getByRole('radio', { name: 'Whole procurement', exact: true }).check()
+  await expect(dialog.getByLabel("Allow this procurement's anchor date to move")).not.toBeChecked()
+  await expect(dialog.locator('.anchor-box')).toContainText('Anchor locked')
+  await dialog.getByLabel("Allow this procurement's anchor date to move").check()
+  await dialog.getByRole('button', { name: 'Close Adjust pipeline plan', exact: true }).click()
+  dialog = await open(page)
+  await dialog.getByRole('radio', { name: 'Whole procurement', exact: true }).check()
+  await expect(dialog.getByLabel("Allow this procurement's anchor date to move")).not.toBeChecked()
+})
+
+test('a range can move into an adjustment gap across Christmas without a procurement preview', async ({ page }) => {
+  const data = await setup(page)
+  const original = await page.evaluate(async data => {
+    const dataPath = '/src/data/local-data.ts', projectPath = '/src/domain/project.ts'
+    const { localData } = await import(dataPath), { scheduleProject } = await import(projectPath)
+    const phase = (id: number, weeks: number, offset = 0) => ({ ...data.library.phases[(id - 1) % 3], id, kind: 'phase', weeks, offset, libraryPhaseId: data.library.phases[(id - 1) % 3].id, durationInherited: false, s: 0, e: 0 })
+    const plan = scheduleProject({ ...data.record.plans[0], anchor: Date.UTC(2028, 0, 14), anchorId: 4, nextPhaseId: 6, phases: [
+      phase(1, 2), phase(2, 4, 4), phase(3, 6),
+      { ...phase(4, 0), kind: 'milestone', name: 'Service begins', libraryPhaseId: '' }, phase(5, 12),
+    ] })
+    return localData.savePipeline({ ...data.record, plans: [plan, data.record.plans[1]], expectedRevision: data.record.revision, expectedLibraryRevision: data.library.revision })
+  }, data)
+  await page.goto(`/workspaces/${data.workspace.id}/pipeline?edit=1`)
+  const dialog = await open(page)
+  await dialog.getByRole('combobox', { name: /^From phase/ }).selectOption('1')
+  await expect(dialog.locator('.anchor-box')).toContainText('The selected range leaves this anchor in place.')
+  const grip = dialog.getByRole('button', { name: /^Move selected activity in Community services/ })
+  const box = (await grip.boundingBox())!
+  const week = await dialog.locator('.timeline-canvas').evaluate(element => parseFloat((element as HTMLElement).style.getPropertyValue('--timeline-week')))
+  await page.mouse.move(box.x + 10, box.y + 10); await page.mouse.down()
+  await page.mouse.move(box.x + 10 - week, box.y + 10, { steps: 12 }); await page.mouse.up()
+  await expect(dialog).toContainText('Selected activity moved 1 week earlier')
+  await expect(dialog.getByRole('alert')).toHaveCount(0)
+  await expect(dialog.getByRole('button', { name: 'Review changes', exact: true })).toBeEnabled()
+  await expect(dialog.getByRole('button', { name: 'Apply adjustments', exact: true })).toHaveCount(0)
+  await dialog.getByLabel('Movement direction', { exact: true }).selectOption('1')
+  await dialog.getByLabel('Number of weeks', { exact: true }).fill('1')
+  await dialog.getByRole('button', { name: 'Apply movement', exact: true }).click()
+  await expect(dialog.getByRole('button', { name: 'Review changes', exact: true })).toBeDisabled()
+  await grip.focus(); await page.keyboard.press('Space'); await page.keyboard.press('ArrowLeft'); await page.keyboard.press('Space')
+  await expect(dialog).toContainText('Selected activity moved 1 week earlier')
+  await dialog.getByLabel('Movement direction', { exact: true }).selectOption('-1')
+  await dialog.getByLabel('Number of weeks', { exact: true }).fill('104')
+  await dialog.getByRole('button', { name: 'Apply movement', exact: true }).click()
+  await expect(dialog.getByRole('alert')).toContainText('run into earlier activity')
+  await expect(dialog.locator('.adjustment-controls > p[role=status]')).toHaveText('')
+  await dialog.getByRole('button', { name: 'Review changes', exact: true }).click()
+  await dialog.getByRole('button', { name: 'Apply adjustments', exact: true }).click()
+  await page.getByRole('region', { name: 'Pipeline Plan context' }).getByRole('button', { name: 'Save', exact: true }).click()
+  await page.getByRole('group', { name: 'Save the displayed pipeline plan' }).getByRole('button', { name: 'Save', exact: true }).click()
+  await page.getByRole('dialog', { name: /Save changes to/ }).getByRole('button', { name: 'Overwrite and save', exact: true }).click()
+  const result = await saved(page, data)
+  expect(result.plans[0].phases[2].e).toBe(Date.UTC(2027, 11, 20))
+  expect(result.plans[0].anchor).toBe(original.plans[0].anchor)
+  for (const index of [0, 3, 4]) {
+    expect(result.plans[0].phases[index].s).toBe(original.plans[0].phases[index].s)
+    expect(result.plans[0].phases[index].e).toBe(original.plans[0].phases[index].e)
+  }
+  expect(result.plans[1]).toEqual(original.plans[1])
+  await page.reload()
+  await expect(page.getByRole('dialog', { name: 'Editing live pipeline plan', exact: true })).toContainText('All changes saved')
+})
+
+test('changed rules refresh and require review again; a stale source blocks applying without losing work', async ({ page }) => {
+  const data = await setup(page)
+  const dialog = await open(page)
+  await dialog.getByRole('button', { name: 'Apply movement', exact: true }).click()
+  await dialog.getByRole('button', { name: 'Review changes', exact: true }).click()
+  await page.evaluate(async ({ workspace }) => { const path = '/src/data/local-data.ts', { localData } = await import(path); await localData.createPhase(workspace.id, { name: 'Extra phase', weeks: 1, color: '#123456', checks: [] }) }, data)
+  await dialog.getByRole('button', { name: 'Apply adjustments', exact: true }).click()
+  await expect(dialog.getByRole('alert')).toContainText('Review the changes again')
+  await expect(dialog.getByRole('button', { name: 'Apply movement', exact: true })).toBeVisible()
+  await dialog.getByRole('button', { name: 'Review changes', exact: true }).click()
+  await page.evaluate(async ({ workspace, record }) => {
+    const path = '/src/data/local-data.ts', { localData } = await import(path), library = await localData.getLibrary(workspace.id)
+    await localData.savePipeline({ ...record, expectedRevision: record.revision, expectedLibraryRevision: library.revision })
+  }, data)
+  await dialog.getByRole('button', { name: 'Apply adjustments', exact: true }).click()
+  await expect(dialog.getByRole('alert')).toContainText('changed in another tab')
+  await expect(dialog.getByRole('region', { name: 'Date and duration changes table' })).toContainText('2 weeks earlier')
+})
+
+for (const width of [320, 390, 1440]) test(`Full pipeline and modal scrolling at ${width}px`, async ({ page }, info) => {
+  await page.setViewportSize({ width, height: 844 })
+  await setup(page)
+  await page.getByRole('combobox', { name: /^Viewing window/ }).selectOption('all')
+  const dialog = await open(page)
+  await expect(dialog.getByRole('combobox', { name: /^Viewing window/ })).toHaveValue('all')
+  const scrollable = dialog.locator(width < 700 ? '.adjustment-body' : '.adjustment-controls')
+  await scrollable.hover(); await page.mouse.wheel(0, 700)
+  await expect.poll(() => scrollable.evaluate(element => element.scrollTop)).toBeGreaterThan(0)
+  await page.screenshot({ path: info.outputPath('adjustment-layout.png') })
+  await expect(dialog.getByRole('button', { name: 'Cancel adjustment', exact: true })).toBeInViewport()
+  await expect(dialog).toBeInViewport()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+})
+
+test('saved contents remain unchanged until Save and adjustment tooltips are visible inside the modal', async ({ page }) => {
+  const data = await setup(page, true)
+  const dialog = await open(page)
+  await dialog.locator('.phase-segment').filter({ hasText: 'Preparation' }).first().hover()
+  await expect(dialog.locator('.timeline-tooltip')).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(dialog).toBeVisible()
+  await expect(dialog.locator('.timeline-tooltip')).toHaveCount(0)
+  await dialog.getByRole('button', { name: 'Apply movement', exact: true }).click()
+  await dialog.getByRole('button', { name: 'Review changes', exact: true }).click()
+  await dialog.getByRole('button', { name: 'Apply adjustments', exact: true }).click()
+  expect((await saved(page, data)).plans).toEqual(data.record.plans)
+  await expect(page.getByRole('dialog', { name: 'Editing live pipeline plan', exact: true }).locator('.context-save-state')).toHaveText('Unsaved changes')
+})
+
+test('Christmas-only duration wording explains changed calendar extent without implying a duration edit', async ({ page }) => {
+  const data = await setup(page)
+  await page.evaluate(async ({ record, library }) => {
+    const dataPath = '/src/data/local-data.ts', projectPath = '/src/domain/project.ts'
+    const { localData } = await import(dataPath), { scheduleProject } = await import(projectPath)
+    await localData.savePipeline({ ...record, expectedRevision: record.revision, expectedLibraryRevision: library.revision, plans: [scheduleProject({ ...record.plans[0], anchor: Date.UTC(2032, 0, 19) })] })
+  }, data)
+  await page.reload()
+  const dialog = await open(page)
+  await dialog.getByLabel('Number of weeks', { exact: true }).fill('10')
+  await dialog.getByRole('button', { name: 'Apply movement', exact: true }).click()
+  await dialog.getByRole('button', { name: 'Review changes', exact: true }).click()
+  const dates = dialog.getByRole('region', { name: 'Date and duration changes table' })
+  await expect(dates).toContainText('No longer includes the Christmas break; active duration unchanged.')
+  await expect(dates).toContainText('4 active weeks')
+  await expect(dates).toContainText('Christmas and New Year break excluded.')
+  await expect(dates.getByRole('row').filter({ hasText: 'Evaluation' }).getByRole('cell').nth(2)).toContainText('4 weeks')
+})
+
+test('milestone-only procurements disable phase controls and can move only after anchor permission', async ({ page }) => {
+  const data = await setup(page)
+  await page.evaluate(async ({ record, library }) => {
+    const path = '/src/data/local-data.ts', { localData } = await import(path), plan = record.plans[0]
+    await localData.savePipeline({ ...record, expectedRevision: record.revision, expectedLibraryRevision: library.revision, plans: [{ ...plan, phases: plan.phases.filter((phase: { kind: string }) => phase.kind === 'milestone') }] })
+  }, data)
+  await page.reload()
+  const dialog = await open(page)
+  await expect(dialog.getByRole('radio', { name: 'Whole procurement', exact: true })).toBeChecked()
+  await expect(dialog.getByRole('radio', { name: 'One phase', exact: true })).toBeDisabled()
+  await expect(dialog.getByRole('radio', { name: 'Phase range', exact: true })).toBeDisabled()
+  await dialog.getByLabel("Allow this procurement's anchor date to move").check()
+  await dialog.getByRole('button', { name: 'Apply movement', exact: true }).click()
+  await dialog.getByRole('button', { name: 'Review changes', exact: true }).click()
+  await expect(dialog.getByRole('region', { name: 'Date and duration changes table' })).toContainText('Anchor: Service begins')
+})
+
+test('resolved findings remain visible and storage failure retains adjustments for retry', async ({ page }) => {
+  const data = await setup(page)
+  const dialog = await open(page)
+  await dialog.getByRole('radio', { name: 'Whole procurement', exact: true }).check()
+  await dialog.getByLabel("Allow this procurement's anchor date to move").check()
+  await dialog.getByLabel('Number of weeks', { exact: true }).fill('20')
+  await dialog.getByRole('button', { name: 'Apply movement', exact: true }).click()
+  await expect(dialog.locator('.finding-status')).toHaveText('Resolved')
+  await expect(dialog.getByRole('region', { name: 'Clash checks', exact: true })).toContainText('0 critical clashes')
+  await page.evaluate(async () => {
+    const path = '/src/data/local-data.ts', { localData } = await import(path), original = localData.getLibrary
+    localData.getLibrary = async () => { localData.getLibrary = original; throw new Error('Storage temporarily unavailable. Try again.') }
+  })
+  await dialog.getByRole('button', { name: 'Review changes', exact: true }).click()
+  await expect(dialog.getByRole('alert')).toContainText('Storage temporarily unavailable')
+  await dialog.getByRole('button', { name: 'Review changes', exact: true }).click()
+  await expect(dialog.getByRole('region', { name: 'Date and duration changes table' })).toContainText('20 weeks earlier')
+  await dialog.getByRole('button', { name: 'Apply adjustments', exact: true }).click()
+  expect((await saved(page, data)).plans).toEqual(data.record.plans)
+})
+
+test('fixed finish preserves neighbours and leaving an unapplied adjustment invokes the shared guard', async ({ page }) => {
+  await setup(page)
+  // Keep this a client-side history entry, as it is for a user navigating the
+  // app. A full page.goto entry has no router index to block when going Back.
+  await page.getByRole('button', { name: 'Exit edit mode', exact: true }).click()
+  await page.getByRole('link', { name: 'Edit live plan', exact: true }).click()
+  const dialog = await open(page)
+  await dialog.getByRole('radio', { name: 'One phase', exact: true }).check()
+  await dialog.getByRole('tab', { name: 'Move phase', exact: true }).focus()
+  await page.keyboard.press('End')
+  await expect(dialog.getByRole('tab', { name: 'Change duration', exact: true })).toBeFocused()
+  await dialog.getByLabel('Duration (weeks)', { exact: true }).fill('3')
+  await dialog.getByLabel('Keep this date fixed').selectOption('finish')
+  await dialog.getByRole('button', { name: 'Apply duration change', exact: true }).click()
+  await dialog.getByRole('button', { name: 'Review changes', exact: true }).click()
+  const row = dialog.getByRole('region', { name: 'Date and duration changes table' }).getByRole('row').filter({ hasText: 'Preparation' })
+  await expect(row).toContainText('Start: 1 week later')
+  await expect(row).toContainText('Finish: unchanged')
+  await page.keyboard.press('Escape')
+  await expect(dialog.getByRole('button', { name: 'Apply movement', exact: true })).toHaveCount(1)
+  await page.goBack()
+  const leave = page.getByRole('dialog', { name: 'Unsaved changes', exact: true })
+  await expect(leave).toBeVisible()
+  await leave.getByRole('button', { name: 'Keep editing', exact: true }).click()
+  await expect(dialog).toBeVisible()
+})

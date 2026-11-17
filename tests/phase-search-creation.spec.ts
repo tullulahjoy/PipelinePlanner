@@ -1,0 +1,103 @@
+import { expect, test } from '@playwright/test'
+import type { Page } from '@playwright/test'
+
+async function workspace(page: Page) {
+  await page.goto('/workspaces')
+  const id = await page.evaluate(async () => {
+    const path = '/src/data/local-data.ts'; const { localData } = await import(path)
+    const workspace = await localData.createWorkspace('Search team')
+    await localData.createPhase(workspace.id, { name: 'Evaluation', weeks: 3, color: '#315ed4', checks: [] })
+    localStorage.setItem(`ltpp-app:welcome-dismissed:${workspace.id}`, '1')
+    return workspace.id
+  })
+  return id
+}
+
+async function assertSelectedName(page: Page, name: string) {
+  const field = page.getByRole('dialog', { name: 'Create phase', exact: true }).getByLabel('Phase name', { exact: true })
+  await expect(field).toHaveValue(name)
+  await expect(field).toBeFocused()
+  expect(await field.evaluate((element: HTMLInputElement) => [element.selectionStart, element.selectionEnd])).toEqual([0, name.length])
+}
+
+for (const width of [390, 1440]) {
+  test(`no results offers contextual creation with a selected name at ${width}px`, async ({ page }, testInfo) => {
+    await page.setViewportSize({ width, height: 900 })
+    const id = await workspace(page)
+    await page.goto(`/workspaces/${id}/pipeline?edit=1&add=1`)
+    await page.getByRole('button', { name: '+ Add phase', exact: true }).first().click()
+    const chooser = page.getByRole('dialog', { name: 'Add phase', exact: true })
+    await chooser.getByRole('radio', { name: /^Evaluation/ }).check()
+    await expect(chooser.getByRole('heading', { name: 'Clash-checking rules', exact: true })).toBeVisible()
+    await chooser.getByRole('searchbox').fill('  Bid Writing  ')
+    await expect(chooser.getByRole('heading', { name: 'No phases found for “Bid Writing”', exact: true })).toBeVisible()
+    await expect(chooser.getByText('Create a reusable phase for this procurement and future schedules.', { exact: true })).toBeVisible()
+    await expect(chooser.getByRole('button', { name: 'Add phase to procurement', exact: true })).toBeDisabled()
+    await expect(chooser.getByText(/^Showing 0 of/)).toHaveCount(0)
+    await expect(chooser.getByText('No phases match your search.', { exact: true })).toHaveCount(0)
+    await expect(chooser.getByText(/If nothing here meets/)).toHaveCount(0)
+    await expect(chooser.getByText(/You can change a phase’s duration/)).toHaveCount(0)
+    await expect(chooser.getByText(/^Preview the schedule after adding/)).toHaveCount(0)
+    const create = chooser.getByRole('button', { name: '+ Create “Bid Writing”', exact: true })
+    expect(await create.evaluate(element => getComputedStyle(element).backgroundColor)).toBe('rgb(118, 80, 139)')
+    expect(await chooser.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true)
+    await page.screenshot({ path: testInfo.outputPath('no-results.png') })
+    await create.click()
+    const modal = page.getByRole('dialog', { name: 'Create phase', exact: true })
+    await assertSelectedName(page, 'Bid Writing')
+    await expect(modal.getByRole('heading', { name: 'Clash-checking rules', exact: true })).toBeVisible()
+    await page.keyboard.type('Commercial review')
+    await expect(modal.getByLabel('Phase name', { exact: true })).toHaveValue('Commercial review')
+    await modal.getByRole('button', { name: 'Cancel', exact: true }).click()
+    await page.getByRole('dialog', { name: 'Discard phase details?', exact: true }).getByRole('button', { name: 'Discard phase details', exact: true }).click()
+    await expect(chooser.getByRole('searchbox')).toHaveValue('  Bid Writing  ')
+    const stored = await page.evaluate(async id => { const path = '/src/data/local-data.ts'; const { localData } = await import(path); return { library: await localData.getLibrary(id), pipelines: await localData.listPipelines(id) } }, id)
+    expect(stored.library.phases).toHaveLength(1)
+    expect(stored.pipelines).toEqual([])
+    await create.click()
+    await assertSelectedName(page, 'Bid Writing')
+    await modal.getByRole('button', { name: 'Create phase and add to procurement', exact: true }).click()
+    await expect(modal).toHaveCount(0)
+    await expect(chooser).toHaveCount(0)
+    await expect(page.locator('.schedule-editor-table .phase-label')).toHaveText(['Bid Writing'])
+  })
+}
+
+test('template phase creation receives the search name, while direct Library creation starts blank', async ({ page }) => {
+  const id = await workspace(page)
+  await page.goto(`/workspaces/${id}/library?section=templates`)
+  await page.getByRole('button', { name: '+ Create template', exact: true }).click()
+  await page.getByRole('button', { name: '+ Add phase', exact: true }).first().click()
+  const chooser = page.getByRole('dialog', { name: 'Add phase', exact: true })
+  await chooser.getByRole('searchbox').fill('Dialogue')
+  await chooser.getByRole('button', { name: '+ Create “Dialogue”', exact: true }).click()
+  await assertSelectedName(page, 'Dialogue')
+  await page.getByRole('dialog', { name: 'Create phase', exact: true }).getByRole('button', { name: 'Cancel', exact: true }).click()
+  await expect(chooser).toBeVisible()
+  await chooser.getByRole('button', { name: 'Cancel', exact: true }).click()
+  await page.getByRole('button', { name: /^Manage phases/ }).click()
+  await page.getByRole('button', { name: '+ Create phase', exact: true }).click()
+  const modal = page.getByRole('dialog', { name: 'Create phase', exact: true })
+  await expect(modal.getByLabel('Phase name', { exact: true })).toHaveValue('')
+  await expect(modal.getByLabel('Phase name', { exact: true })).toBeFocused()
+})
+
+test('selected-phase guidance returns when the search is cleared and creation can be cancelled without edits', async ({ page }) => {
+  const id = await workspace(page)
+  await page.goto(`/workspaces/${id}/pipeline?edit=1&add=1`)
+  await page.getByRole('button', { name: '+ Add phase', exact: true }).first().click()
+  const chooser = page.getByRole('dialog', { name: 'Add phase', exact: true })
+  await chooser.getByRole('searchbox').fill('Bid Writing')
+  await chooser.getByRole('button', { name: '+ Create “Bid Writing”', exact: true }).click()
+  await assertSelectedName(page, 'Bid Writing')
+  await page.getByRole('dialog', { name: 'Create phase', exact: true }).getByRole('button', { name: 'Cancel', exact: true }).click()
+  await expect(page.getByRole('dialog', { name: 'Discard phase details?', exact: true })).toHaveCount(0)
+  await chooser.getByRole('searchbox').fill('')
+  await expect(chooser.locator('.phase-browser-no-results')).toHaveCount(0)
+  await chooser.getByRole('radio', { name: /^Evaluation/ }).check()
+  await expect(chooser.getByText(/^Preview the schedule after adding/)).toBeVisible()
+  await expect(chooser.getByText(/You can change a phase’s duration/)).toBeVisible()
+  await chooser.getByRole('button', { name: 'Add phase to procurement', exact: true }).click()
+  await page.getByRole('region', { name: 'Procurement schedule', exact: true }).getByRole('button', { name: 'Edit phase: Evaluation', exact: true }).click()
+  await expect(page.getByRole('dialog', { name: 'Edit phase', exact: true }).getByRole('heading', { name: 'Clash-checking rules', exact: true })).toBeVisible()
+})

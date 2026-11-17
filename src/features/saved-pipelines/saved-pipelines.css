@@ -1,0 +1,6 @@
+.saved-plans .saved-plan-filter { max-width: 240px; margin-bottom: 18px; }
+.saved-plans table { min-width: 760px; }
+.saved-plans th:first-child { width: 35%; }
+.saved-plans .stage-label { margin-bottom: 0; }
+.saved-plans .saved-details summary { cursor: pointer; }
+.saved-plans .saved-scope { font-weight: 400; }

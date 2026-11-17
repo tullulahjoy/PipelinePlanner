@@ -1,0 +1,44 @@
+.timeline-tooltip {
+  position: fixed;
+  width: 340px;
+  max-width: calc(100vw - 24px);
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 12px 14px 14px;
+  border: 1px solid var(--control-border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 8px 28px color-mix(in srgb, var(--header) 16.08%, transparent);
+  font: 12px/1.65 Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  overflow-wrap: anywhere;
+}
+.timeline-tooltip[data-pinned="true"] { border-color: var(--primary); }
+.timeline-tooltip-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) 30px 30px; align-items: center; gap: 6px; min-width: 0; max-width: 100%; margin-bottom: 7px; }
+.timeline-tooltip-status { min-width: 0; margin: 0; color: var(--muted); font-size: 11px; font-weight: 650; }
+.timeline-tooltip[data-pinned="true"] .timeline-tooltip-status { color: var(--primary); }
+.timeline-tooltip-control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 0;
+  width: 30px;
+  height: 30px;
+  padding: 5px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+}
+.timeline-tooltip-control:hover { background: var(--primary-soft); }
+.timeline-tooltip-control[aria-pressed="true"] { background: var(--primary-soft); border-color: var(--primary); color: var(--primary); }
+.timeline-tooltip-control:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+.timeline-tooltip-control svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.timeline-tooltip-body strong { display: block; color: var(--ink); margin-bottom: 4px; }
+.timeline-tooltip-notice { margin-top: 9px; padding: 8px 10px; border-left: 3px solid #a66a05; border-radius: 4px; background: #fff6df; color: #7d5106; }
+.timeline-tooltip-notice.critical { border-left-color: #b43d4e; background: #fff0f2; color: #a52f40; }
+.timeline-tooltip-notice strong { color: inherit; margin-bottom: 2px; }
+@media print { .timeline-tooltip { display: none; } }

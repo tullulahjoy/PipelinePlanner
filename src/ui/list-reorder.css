@@ -1,0 +1,2 @@
+.reorder-ghost { position: fixed; z-index: 10000; pointer-events: none; padding: 9px 13px; max-width: min(360px, calc(100vw - 16px)); border: 1px solid var(--primary); border-radius: 6px; background: var(--primary-soft); color: var(--ink); font: 13px/1.5 Inter, system-ui, sans-serif; box-shadow: 0 5px 20px color-mix(in srgb, var(--header) 13.33%, transparent); overflow-wrap: anywhere; }
+.reorder-ghost[hidden] { display: none; }

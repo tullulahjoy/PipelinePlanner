@@ -1,0 +1,14 @@
+.app-dialog.pipeline-modal {
+  width: calc(100vw - 36px); max-width: 1500px; height: calc(100dvh - 36px); max-height: none;
+  display: flex; flex-direction: column; overflow: hidden; background: var(--page);
+}
+.pipeline-modal > header { background: var(--surface); }
+.pipeline-modal > header p { margin: 8px 0 0; max-width: 75ch; color: var(--muted); font-size: 14px; line-height: 1.6; }
+.pipeline-modal > .dialog-content { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 24px; }
+.pipeline-modal .pipeline-context-panel { margin-top: 0; }
+.pipeline-modal .project-editor { margin: 0; }
+.pipeline-modal .pipeline-page:focus { outline: none; }
+@media (max-width: 700px) {
+  .app-dialog.pipeline-modal { width: calc(100vw - 10px); height: calc(100dvh - 10px); }
+  .pipeline-modal > .dialog-content { padding: 14px; }
+}
